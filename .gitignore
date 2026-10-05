@@ -1,0 +1,14 @@
+# Senhas e configurações privadas
+.env
+.env.*
+!.env.example
+credentials*.json
+
+# Dados e backups locais
+backups/
+data/
+
+# Logs e arquivos temporários
+*.log
+__pycache__/
+.venv/
