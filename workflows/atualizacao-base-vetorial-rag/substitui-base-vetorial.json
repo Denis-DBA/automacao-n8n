@@ -1,0 +1,168 @@
+{
+  "name": "substitui-base-vetorial",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "ID_PASTA_GOOGLE_DRIVE_EXEMPLO",
+          "mode": "list",
+          "cachedResultName": "excluido",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/ID_PASTA_GOOGLE_DRIVE_EXEMPLO"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ca34df10-c372-4fbd-97ca-61c12ff20232",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Mha1AMtsQiOz6TAk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b9e659d-630f-4107-a6c1-1dbf4950f519",
+              "name": "id_documento",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        0
+      ],
+      "id": "62024ca1-fb5e-4836-a329-6d44ba74fa8a",
+      "name": "variaveis"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM public.documents\nWHERE metadata->>'id_documento' = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.id_documento }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        496,
+        0
+      ],
+      "id": "c4292b36-8ba6-4560-8261-b58dcf548960",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('variaveis').item.json.id_documento }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        720,
+        0
+      ],
+      "id": "a3d88077-5bc6-4d27-82f0-66a44dd7f034",
+      "name": "Delete a file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Mha1AMtsQiOz6TAk",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "variaveis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "variaveis": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Delete a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "b1a1a206-f57f-4f3d-acbf-49a5c71d60a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "gP2CgcpSOUJGuiA5",
+  "tags": [
+    {
+      "updatedAt": "2026-10-11T04:00:24.759Z",
+      "createdAt": "2026-10-11T04:00:24.759Z",
+      "id": "tPmpipXc4NDkc4nm",
+      "name": "Agente-IA"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "Section 1 - Academy Registration",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "67746d67-ed83-4b97-8c0c-7180f51ae104",
+      "name": "TriggerManual"
+    },
+    {
+      "parameters": {
+        "url": "https://learn.app.n8n.cloud/webhook/course/foundations/register",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "assessment_id",
+              "value": "ASSESSMENT_ID_EXEMPLO"
+            },
+            {
+              "name": "workflow_name",
+              "value": "Section 1 - Academy Registration"
+            },
+            {
+              "name": "tag",
+              "value": "foundations-course"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4cf04705-fc0e-4d47-a4e9-80eeaaa51fd6",
+      "name": "SubmitRegistration",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PEqXDcVkAYiMkeKU",
+          "name": "n8n Academy API Key"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "TriggerManual": {
+      "main": [
+        [
+          {
+            "node": "SubmitRegistration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "8f21524b-3f6e-40d2-a8ad-bed7716d713b",
+  "meta": {
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "hhxwcYE7sUBWpuA2",
+  "tags": [
+    {
+      "updatedAt": "2026-10-10T23:29:14.334Z",
+      "createdAt": "2026-10-10T23:29:14.334Z",
+      "id": "CivaYCHDDHuXmX9H",
+      "name": "n8n101"
+    }
+  ]
+}

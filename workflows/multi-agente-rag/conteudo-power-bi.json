@@ -1,0 +1,412 @@
+{
+  "name": "conteudo-power-bi",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        256
+      ],
+      "id": "7a36ac64-5ed8-400f-9e3d-b747c5100195",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "72be8b9d-5ea6-4484-ac51-b79b41dd8bdd",
+              "name": "link",
+              "value": "https://learn.microsoft.com/pt-br/power-bi/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -944,
+        256
+      ],
+      "id": "37e70036-1105-4c8e-9631-2763244df919",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://learn.microsoft.com/pt-br/power-bi/",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        256
+      ],
+      "id": "42477c58-28e8-42e5-804b-57124e8153fa",
+      "name": "/scrape",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "nWI7ptLMUmR1BQzQ",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -64,
+        256
+      ],
+      "id": "fed289c1-457c-4728-a2e0-b078aa5d2268",
+      "name": "Loop Over Items",
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        320,
+        272
+      ],
+      "id": "617d832c-6db9-49a0-9ad7-57c9dab41a8f",
+      "name": "/scrape1",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "nWI7ptLMUmR1BQzQ",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e363e0fc-8cd1-4f34-a94a-88fdd0861938",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// =====================================================\n// Obtém o markdown\n// =====================================================\n\nlet text = input.data?.markdown || input.markdown || input.content || \"\";\n\n// =====================================================\n// Desescapa caracteres do JSON\n// =====================================================\n\ntext = text\n    .replace(/\\\\n/g, \"\\n\")\n    .replace(/\\\\r/g, \"\")\n    .replace(/\\\\t/g, \"\\t\");\n\n// =====================================================\n// Remove o escape do Markdown\n// =====================================================\n\ntext = text.replace(/\\\\([#>*`\\[\\](){}_|-])/g, \"$1\");\n\n// =====================================================\n// Remove imagens\n// =====================================================\n\ntext = text.replace(/!\\[[^\\]]*?\\]\\([^)]+\\)/g, \"\");\n\n// =====================================================\n// Mantém somente o texto dos links\n// =====================================================\n\ntext = text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, \"$1\");\n\n// =====================================================\n// Remove URLs soltas\n// =====================================================\n\ntext = text.replace(/https?:\\/\\/\\S+/g, \"\");\n\n// =====================================================\n// Remove HTML\n// =====================================================\n\ntext = text.replace(/<[^>]*>/g, \"\");\n\n// =====================================================\n// Remove avisos do GitBook\n// =====================================================\n\nconst blacklist = [\n    \"For the complete documentation index\",\n    \"Markdown versions of documentation pages\",\n    \"Last updated\",\n    \"Was this helpful\",\n    \"AcceptReject\",\n    \"This site uses cookies\"\n];\n\ntext = text\n    .split(\"\\n\")\n    .filter(line => {\n\n        const t = line.trim();\n\n        if (!t) return false;\n\n        return !blacklist.some(item => t.includes(item));\n\n    })\n    .join(\"\\n\");\n\n// =====================================================\n// Normaliza espaços\n// =====================================================\n\ntext = text.replace(/[ \\t]+/g, \" \");\ntext = text.replace(/\\n{3,}/g, \"\\n\\n\");\n\n// =====================================================\n// Extrai H1\n// =====================================================\n\nlet title = \"\";\n\nconst h1 = text.match(/^#\\s+(.*)$/m);\n\nif (h1) {\n\n    title = h1[1].trim();\n\n    text = text.replace(/^#\\s+.*$/m, \"\").trim();\n\n}\n\n// =====================================================\n// Resultado\n// =====================================================\n\nreturn [{\n    json: {\n        technology: \"Power BI\",\n        url: input.data?.metadata?.url || input.url || \"\",\n        title,\n        content: text\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        272
+      ],
+      "id": "d42db1d3-9671-490d-837e-a81980dd1e33",
+      "name": "Limpeza"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.data.markdown || \"\";\n\n// Desescapa o Markdown retornado pelo Firecrawl\nconst text = markdown\n    .replace(/\\\\n/g, \"\\n\")\n    .replace(/\\\\r/g, \"\")\n    .replace(/\\\\t/g, \"\\t\");\n\n// Procura todos os links Markdown\nconst regex = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\)/g;\n\nconst urls = [];\nconst seen = new Set();\n\nlet match;\n\nwhile ((match = regex.exec(text)) !== null) {\n\n    let url = match[2].trim();\n\n    // Remove âncoras\n    url = url.split(\"#\")[0];\n\n    // Remove query string\n    url = url.split(\"?\")[0];\n\n    // Apenas documentação do Power BI\n    if (!url.startsWith(\"https://learn.microsoft.com/pt-br/power-bi/\")) {\n        continue;\n    }\n\n    // Ignora PDFs\n    if (url.endsWith(\".pdf\")) {\n        continue;\n    }\n\n    // Ignora imagens\n    if (/\\.(png|jpg|jpeg|gif|svg|webp)$/i.test(url)) {\n        continue;\n    }\n\n    if (!seen.has(url)) {\n        seen.add(url);\n\n        urls.push({\n            json: {\n                url\n            }\n        });\n    }\n}\n\nreturn urls;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        256
+      ],
+      "id": "73e0183b-b86c-4cf3-a8f2-f9756c73fdda",
+      "name": "gera_links"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "documents",
+        "embeddingBatchSize": 100,
+        "options": {
+          "columnNames": {
+            "values": {
+              "contentColumnName": "content"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        272
+      ],
+      "id": "127addf2-b549-4c08-b4ad-7544c6bbf37e",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        720,
+        480
+      ],
+      "id": "c3fc557b-9989-4eef-b5aa-d91b4dc3ec18",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.content }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "={{ $json.technology }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        496
+      ],
+      "id": "125ad367-661d-4417-948d-09988e52f315",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 1536,
+        "chunkOverlap": 150,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        912,
+        704
+      ],
+      "id": "af495ae7-2fe8-4795-a899-658b0d94182d",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        272
+      ],
+      "id": "fb4914b4-bc1b-4000-a091-2ed3180c157b",
+      "name": "Wait",
+      "webhookId": "4f3ac8e1-b156-4083-b340-ef6f60fb7feb"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        256
+      ],
+      "id": "5db5f190-b8a1-4f12-9d08-72404cc2f932",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "/scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/scrape": {
+      "main": [
+        [
+          {
+            "node": "gera_links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/scrape1": {
+      "main": [
+        [
+          {
+            "node": "Limpeza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpeza": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gera_links": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "/scrape1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "5f459c4c-4cdb-40bf-a8f1-15bdc762dd80",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "cbWgNT8vcgoebduc",
+  "tags": []
+}

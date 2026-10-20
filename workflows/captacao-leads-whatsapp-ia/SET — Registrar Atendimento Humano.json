@@ -1,0 +1,300 @@
+{
+  "name": "SET — Registrar Atendimento Humano",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        736,
+        272
+      ],
+      "id": "658900ec-cefa-4139-b898-cb27004f2a62",
+      "name": "Chat Memory Manager"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=/nothink\n\nGere exclusivamente em português brasileiro o resumo\ndo atendimento abaixo.\n\nNão apresente raciocínio, explicações ou comentários.\n\nHistórico da conversa:\n\n{{ JSON.stringify($json.messages, null, 2) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Responda exclusivamente com a palavra FUNCIONANDO.\nNão escreva nenhuma outra palavra."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "78606dca-5863-48ba-89dd-f2c2bd84f20a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {
+          "think": false,
+          "temperature": 0.2,
+          "numPredict": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmOllama",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        464
+      ],
+      "id": "dd4579b4-d597-4114-befa-fd754a0ee6f4",
+      "name": "Ollama Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "sendMessage",
+        "instanceApiKey": "SUBSTITUA_PELA_CHAVE_DA_INSTANCIA",
+        "sendTextNumber": "TELEFONE_ATENDENTE_EXEMPLO",
+        "sendTextContent": "={{ $json.mensagem }}",
+        "sendTextAdditionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-evolution-go.evoGo",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        272
+      ],
+      "id": "ad10b79a-25e0-4d62-bddf-0b393a2593b5",
+      "name": "Send text message",
+      "credentials": {
+        "evoGoApi": {
+          "id": "OCP6IET0br9T6vl5",
+          "name": "EvoGo account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 5. TRANSFERENCIA ATENDIMENTO",
+        "height": 544,
+        "width": 2208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        160
+      ],
+      "id": "302fe4e0-3cd0-405a-8e40-0bf9c25d9f7a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.telefone + ':status' }}",
+        "value": "encaminhado",
+        "expire": true,
+        "ttl": 7200
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        400,
+        272
+      ],
+      "id": "05545c44-ebaa-402d-8165-16e47eba0d25",
+      "name": "SET — Registrar Atendimento Humano (Subworkflow)",
+      "credentials": {
+        "redis": {
+          "id": "jxDxKnHS4jDVi44B",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mensagens.example.invalid/atendimento",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1520,
+        272
+      ],
+      "id": "3ab4d654-2e0a-4bff-9680-ccdc2dfe9378",
+      "name": "HTTP Request - Enviar Resumo ao Atendente"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('SET — Registrar Atendimento Humano (Subworkflow)').first().json.telefone.toString() }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        752,
+        480
+      ],
+      "id": "f6ff8995-c600-4372-8a44-e76bd94ae771",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "telefone"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        256
+      ],
+      "id": "5cc580f1-f269-44af-b0c5-fb49121d718b",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "telefone": "TELEFONE_CLIENTE_EXEMPLO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Chat Memory Manager": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Enviar Resumo ao Atendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET — Registrar Atendimento Humano (Subworkflow)": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Enviar Resumo ao Atendente": {
+      "main": [
+        [
+          {
+            "node": "Send text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "SET — Registrar Atendimento Humano (Subworkflow)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "9eef2a7d-bba5-419d-ae8e-645ed7369012",
+  "meta": {
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "EKajj3sYj0zrsEGv",
+  "tags": [
+    {
+      "updatedAt": "2026-10-11T04:00:24.759Z",
+      "createdAt": "2026-10-11T04:00:24.759Z",
+      "id": "tPmpipXc4NDkc4nm",
+      "name": "Agente-IA"
+    }
+  ]
+}

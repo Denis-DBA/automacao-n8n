@@ -1,0 +1,250 @@
+{
+  "name": "agente_principal_agendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b021acb8-bc43-442b-983e-7d69d83638a6",
+      "name": "When chat message received",
+      "webhookId": "eb96c6a2-a34b-4ec2-abd5-e924b857a7c8"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Agente de Agendamento\n\n## Identidade\n\n- Nome: Nívia\n- Empresa: Academia da Nuvem\n- Idioma: Português (Brasil)\n\n**Data e hora atual**\n\n```\n{{ $now.weekdayLong }}, {{ $now.format('dd/MM/yyyy') }}\nHora: {{ $now.hour.toString().padStart(2,'0') }}:{{ $now.minute.toString().padStart(2,'0') }}\nTimezone: {{ $now.zone }}\n```\n\n**ID da conversa**\n\n```\n{{ $json.sessionId }}\n```\n\n---\n\n# Objetivo\n\nSeu objetivo é atender o usuário e gerenciar compromissos da agenda.\n\nAs operações permitidas são:\n\n- Novo agendamento\n- Consultar disponibilidade\n- Reagendar compromisso\n- Cancelar compromisso\n\n---\n\n# Atendimento\n\n- Seja cordial e profissional.\n- Utilize linguagem clara e objetiva.\n- Faça apenas uma pergunta por vez.\n- Nunca utilize emojis.\n- Solicite apenas as informações que estiverem faltando.\n\n---\n\n# Fluxo do Atendimento\n\n## Novo Agendamento\n\n1. Solicite:\n   - Nome\n   - Telefone\n   - Data desejada\n   - Horário desejado\n   - Assunto\n\n2. Quando possuir todas as informações, utilize a ferramenta **agendamentos** para verificar a disponibilidade.\n\n3. Se o horário estiver disponível:\n   - realize o agendamento;\n   - confirme ao usuário.\n\n4. Se o horário não estiver disponível:\n   - apresente outros horários disponíveis na mesma data;\n   - pergunte se algum deles atende.\n\n5. Caso não exista disponibilidade na data solicitada ou o usuário não possa nos horários disponíveis:\n   - sugira datas próximas;\n   - após a escolha do usuário, utilize novamente a ferramenta **agendamentos**.\n\n---\n\n## Consultar Disponibilidade\n\n1. Solicite a data, caso necessário.\n2. Utilize a ferramenta **agendamentos**.\n3. Informe somente os horários retornados.\n\n---\n\n## Reagendamento\n\n1. Identifique qual compromisso deverá ser alterado.\n2. Solicite a nova data e horário.\n3. Utilize a ferramenta **agendamentos**.\n4. Caso o horário não esteja disponível:\n   - ofereça outros horários na mesma data;\n   - caso necessário, sugira datas próximas.\n5. Confirme a alteração somente após o retorno da ferramenta.\n\n---\n\n## Cancelamento\n\n1. Identifique qual compromisso deverá ser cancelado.\n2. Caso existam vários compromissos, peça ao usuário que informe qual deseja cancelar.\n3. Utilize a ferramenta **agendamentos**.\n4. Confirme o cancelamento após o retorno da ferramenta.\n\n---\n\n# Horário de Funcionamento\n\n- Segunda a sábado: 08:00 às 18:00\n- Domingo e feriados: Fechado\n\nNunca realize agendamentos fora do horário de funcionamento.\n\n---\n\n# Uso da Ferramenta\n\nUtilize sempre a ferramenta **agendamentos** para operações relacionadas à agenda.\n\nA ferramenta recebe um parâmetro **tipo**, que determina a operação.\n\nValores possíveis:\n\n- `agendamento`\n- `disponibilidade`\n- `reagendamento`\n- `cancelamento`\n\nSempre aguarde o retorno da ferramenta antes de responder ao usuário.\n\nNunca confirme uma operação sem que a ferramenta retorne sucesso.\n\n---\n\n# Regras\n\n- Nunca invente horários disponíveis.\n- Nunca confirme um agendamento sem consultar a ferramenta.\n- Nunca confirme um reagendamento sem consultar a ferramenta.\n- Nunca confirme um cancelamento sem consultar a ferramenta.\n- Priorize horários disponíveis na mesma data solicitada.\n- Sugira datas próximas apenas quando necessário.\n- Não repita perguntas cujas informações já foram fornecidas.\n- Não mencione ferramentas, APIs ou processos internos."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "d16e8c63-2192-49f2-aca6-fa1a38aaec4c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        272,
+        224
+      ],
+      "id": "3f0b5cce-f908-40f0-bec0-18be80241004",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Ferramenta responsável por todas as operações de agenda. Utilize-a sempre que precisar consultar disponibilidade, criar, reagendar ou cancelar um compromisso. Nunca confirme uma operação sem consultar esta ferramenta.",
+        "workflowId": {
+          "__rl": true,
+          "value": "XJj5USaLF3hLxwp2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/XJj5USaLF3hLxwp2",
+          "cachedResultName": "ferramentas_agendamento-13"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tipo_solicitacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('tipo_solicitacao', `Escolha um tipo de operação:\n- \\`agendamento\\`\n- \\`disponibilidade\\`\n- \\`reagendamento\\`\n- \\`cancelamento\\``, 'string') }}",
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', `Data inicio agendamento`, 'string') }}",
+            "horario": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('horario', `O horário do agendamento`, 'string') }}",
+            "solicitante": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('solicitante', `O nome do lead que entrou em contato`, 'string') }}",
+            "assunto": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('assunto', `O assunto sobre o qual o solicitante deseja o agendamento`, 'string') }}",
+            "telefone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('telefone', `O telefone do lead que entrou em contato`, 'string') }}",
+            "id_evento": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id_evento', \"O id do evento que deve ser pesquisado pelo nó 'disponibilidade' e repassado aqui quando for necessário `reagendamento` ou `cancelamento`\", 'string') }}"
+          },
+          "matchingColumns": [
+            "tipo_solicitacao"
+          ],
+          "schema": [
+            {
+              "id": "tipo_solicitacao",
+              "displayName": "tipo_solicitacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "horario",
+              "displayName": "horario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "solicitante",
+              "displayName": "solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "assunto",
+              "displayName": "assunto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "telefone",
+              "displayName": "telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "id_evento",
+              "displayName": "id_evento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        224
+      ],
+      "id": "d5c8ed5d-b76e-4afa-a5f5-f7d1065875f6",
+      "name": "agendamentos"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "0869cc28-3156-468a-999a-172c5f8933f6",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agendamentos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "a65ee0d1-e8cb-4a66-8d0d-700d6fa4c84b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "ZGcHFspliBb9KEi1",
+  "tags": [
+    {
+      "updatedAt": "2026-10-20T01:34:50.882Z",
+      "createdAt": "2026-10-20T01:34:50.882Z",
+      "id": "FFhNuYiGEFotx9fB",
+      "name": "calendario"
+    }
+  ]
+}

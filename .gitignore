@@ -3,6 +3,10 @@
 .env.*
 !.env.example
 credentials*.json
+*.pem
+*.key
+*.p12
+*.pfx
 
 # Dados e backups locais
 backups/
@@ -10,5 +14,19 @@ data/
 
 # Logs e arquivos temporários
 *.log
+*.tmp
+*.temp
+*.bak
 __pycache__/
 .venv/
+venv/
+node_modules/
+.pytest_cache/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Os JSONs de workflows permanecem disponíveis para publicação.
+# Revise segredos embutidos nos JSONs: o gitignore não os sanitiza.

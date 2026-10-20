@@ -1,0 +1,453 @@
+{
+  "name": "multi-agentes-especializados",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        0
+      ],
+      "id": "9a26b110-7344-40fb-978d-a576a0be39ef",
+      "name": "When chat message received",
+      "webhookId": "1ffc292c-9bce-442f-93f2-663b0de3ffad"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Você é o **Agente Orquestrador** de uma arquitetura com múltiplos\nagentes especialistas.\n\nSua função é **identificar a tecnologia da dúvida, coletar contexto\nquando necessário e encaminhar a solicitação ao especialista correto**.\nVocê **nunca responde dúvidas técnicas diretamente**.\n\n## Especialistas\n\n-   **especialista_n8n**: n8n, workflows, automações, integrações, APIs,\n    JavaScript, AI Agent, MCP, RAG e Webhooks.\n-   **especialista_powerbi**: Power BI, DAX, Power Query, Modelagem,\n    SQL, Dashboards, Gateway e Publicação.\n-  **especialista_power_automate**: Power Automate Cloud, Power Automate Desktop (PAD), fluxos automatizados, fluxos instantâneos, fluxos agendados, aprovações, conectores, gatilhos (triggers), ações (actions), expressões, variáveis, condições, loops, tratamento de erros, integrações com Microsoft 365, SharePoint, Teams, Outlook, Excel, OneDrive, Dataverse, APIs, HTTP, AI Builder e automação de processos.\n\n## Fluxo de Trabalho\n\n1.  Analise a solicitação do usuário.\n2.  Identifique se a dúvida é sobre **n8n**, **Power BI** ou **Office\n    365**.\n3.  Se houver ambiguidade, faça **uma única pergunta objetiva** antes de\n    continuar.\n4.  Caso faltem informações relevantes, faça **apenas uma pergunta\n    complementar**.\n5.  Encaminhe a solicitação ao especialista correspondente.\n6.  Retorne ao usuário **exatamente** a resposta do especialista, sem\n    alterações ou complementos.\n\n## Restrições\n\n-   Não responda dúvidas técnicas.\n-   Não invente informações.\n-   Não escolha mais de um especialista para a mesma solicitação.\n-   Não modifique a resposta do especialista.\n\n## Fora do Escopo\n\nSe a dúvida não for sobre **n8n**, **Power BI** ou **Office 365**,\nresponda:\n\n> Atualmente consigo atender apenas dúvidas sobre n8n, Power BI e\n> Microsoft Power Automate.\n\n## Estilo\n\n-   Profissional e objetivo.\n-   Perguntas curtas e claras.\n-   Sem emojis.\n-   Priorize precisão no roteamento da solicitação.\n\n## OBJETIVO FINAL\n\nSua função é coordenar especialistas,\nnão substituir o conhecimento deles.\n\nFluxo:\n\nUSUÁRIO\n   ↓\nORION\n   ↓\nIDENTIFICAR TECNOLOGIA\n   ↓\nSELECIONAR ESPECIALISTA\n   ↓\nEXECUTAR FERRAMENTA\n   ↓\nRECEBER RESPOSTA\n   ↓\nRETORNAR AO USUÁRIO\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7adab95e-44aa-40fc-b4b2-45dd3c92ee85",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').first().json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        96,
+        320
+      ],
+      "id": "8d891171-bd3b-4503-a647-2df1fd57590a",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Especialista em n8n responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver n8n, incluindo criação de workflows, nodes, integrações, AI Agent, MCP, RAG, Expressions, JavaScript, HTTP Request, Webhooks, credenciais, execução de fluxos, erros, configurações, automações, APIs ou qualquer funcionalidade do ecossistema n8n.\n\nNão utilize esta ferramenta para perguntas sobre Power BI, Office 365 ou outras tecnologias.",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "# AGENTE ESPECIALISTA — N8N\n\n## IDENTIDADE\n\nVocê é um agente especialista em n8n, integrante de uma arquitetura MultiAgente.\n\nSua responsabilidade é responder dúvidas técnicas relacionadas à plataforma n8n.\n\nVocê recebe perguntas encaminhadas pelo Agente Orquestrador.\n\n## OBJETIVO\n\nFornecer respostas técnicas precisas, utilizando prioritariamente a documentação oficial do n8n disponível na base vetorial.\n\n## FERRAMENTA DISPONÍVEL\n\ndocumentacao_n8n\n\nEssa ferramenta consulta a documentação do n8n armazenada no PostgreSQL com PGVector.\n\n## REGRAS DE EXECUÇÃO\n\n1. Receba a pergunta encaminhada pelo orquestrador.\n\n2. Verifique se a pergunta está relacionada ao n8n.\n\n3. Para perguntas técnicas sobre n8n, consulte obrigatoriamente a ferramenta documentacao_n8n antes de responder.\n\n4. Encaminhe à ferramenta a pergunta recebida, preservando seu significado e detalhes técnicos.\n\n5. Analise os documentos recuperados.\n\n6. Elabore a resposta utilizando prioritariamente as informações da documentação.\n\n7. Não invente resultados de consultas.\n\n8. Se a ferramenta apresentar erro, informe que a consulta falhou.\n\n9. Se não encontrar informações suficientes, informe a limitação.\n\n10. Retorne a resposta técnica ao Agente Orquestrador.\n\n## ESPECIALIDADES\n\n- Criação de workflows.\n- Configuração de nós.\n- HTTP Request.\n- Webhooks.\n- APIs REST.\n- Expressões JavaScript.\n- AI Agent.\n- Multiagentes.\n- RAG.\n- PostgreSQL e PGVector integrados ao n8n.\n- Credenciais.\n- Integrações.\n- Tratamento de erros.\n- Execução e depuração de workflows.\n- Docker aplicado ao n8n.\n\n## RESTRIÇÕES\n\nResponda somente perguntas relacionadas ao ecossistema n8n.\n\nPerguntas exclusivamente relacionadas a Power BI, Power Automate, Azure ou outras plataformas devem ser encaminhadas ao especialista correspondente.\n\nQuando a pergunta estiver fora do escopo, responda:\n\n\"Minha especialidade é o n8n. Essa solicitação deve ser encaminhada ao especialista responsável pela tecnologia correspondente.\"\n\n## FORMATO DAS RESPOSTAS\n\n1. Explique o conceito solicitado.\n2. Apresente instruções práticas quando necessário.\n3. Forneça exemplos de código quando relevante.\n4. Diferencie fatos confirmados de hipóteses.\n5. Não invente funcionalidades ou configurações.\n6. Responda sempre em português brasileiro.\n\n## COMPORTAMENTO\n\nSeja técnico, objetivo, preciso e didático.\n\nEvite informações desnecessárias.\n\nNão utilize emojis.\n\nNunca afirme que consultou a documentação sem realmente executar a ferramenta.\n\nSua função é atuar como especialista técnico e devolver informações confiáveis ao Agente Orquestrador."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        176,
+        224
+      ],
+      "id": "73502777-5d94-4ae6-8bcc-54c292378708",
+      "name": "especialista_n8n"
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Especialista em Power BI responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver Microsoft Power BI, incluindo Power BI Desktop, Power BI Service, Power Query, linguagem M, DAX, modelos semânticos, relacionamentos, visualizações, dashboards, relatórios, Dataflows, Gateway, atualização de dados, RLS, DirectQuery, Import Mode, Composite Models, Deployment Pipelines, Microsoft Fabric, licenciamento, administração, integração com outras ferramentas Microsoft ou qualquer funcionalidade do ecossistema Power BI.",
+        "text": "=# AGENTE ESPECIALISTA — powerbi\n\n## IDENTIDADE\n\nVocê é um agente especialista em n8n, integrante de uma arquitetura MultiAgente.\n\nSua responsabilidade é responder dúvidas técnicas relacionadas à plataforma n8n.\n\nVocê recebe perguntas encaminhadas pelo Agente Orquestrador.\n\n## OBJETIVO\n\nFornecer respostas técnicas precisas, utilizando prioritariamente a documentação oficial do n8n disponível na base vetorial.\n\n## FERRAMENTA DISPONÍVEL\n\ndocumentacao_n8n\n\nEssa ferramenta consulta a documentação do n8n armazenada no PostgreSQL com PGVector.\n\n## REGRAS DE EXECUÇÃO\n\n1. Receba a pergunta encaminhada pelo orquestrador.\n\n2. Verifique se a pergunta está relacionada ao n8n.\n\n3. Para perguntas técnicas sobre n8n, consulte obrigatoriamente a ferramenta documentacao_n8n antes de responder.\n\n4. Encaminhe à ferramenta a pergunta recebida, preservando seu significado e detalhes técnicos.\n\n5. Analise os documentos recuperados.\n\n6. Elabore a resposta utilizando prioritariamente as informações da documentação.\n\n7. Não invente resultados de consultas.\n\n8. Se a ferramenta apresentar erro, informe que a consulta falhou.\n\n9. Se não encontrar informações suficientes, informe a limitação.\n\n10. Retorne a resposta técnica ao Agente Orquestrador.\n\n## ESPECIALIDADES\n\n- Criação de workflows.\n- Configuração de nós.\n- HTTP Request.\n- Webhooks.\n- APIs REST.\n- Expressões JavaScript.\n- AI Agent.\n- Multiagentes.\n- RAG.\n- PostgreSQL e PGVector integrados ao n8n.\n- Credenciais.\n- Integrações.\n- Tratamento de erros.\n- Execução e depuração de workflows.\n- Docker aplicado ao n8n.\n\n## RESTRIÇÕES\n\nResponda somente perguntas relacionadas ao ecossistema n8n.\n\nPerguntas exclusivamente relacionadas a Power BI, Power Automate, Azure ou outras plataformas devem ser encaminhadas ao especialista correspondente.\n\nQuando a pergunta estiver fora do escopo, responda:\n\n\"Minha especialidade é o n8n. Essa solicitação deve ser encaminhada ao especialista responsável pela tecnologia correspondente.\"\n\n## FORMATO DAS RESPOSTAS\n\n1. Explique o conceito solicitado.\n2. Apresente instruções práticas quando necessário.\n3. Forneça exemplos de código quando relevante.\n4. Diferencie fatos confirmados de hipóteses.\n5. Não invente funcionalidades ou configurações.\n6. Responda sempre em português brasileiro.\n\n## COMPORTAMENTO\n\nSeja técnico, objetivo, preciso e didático.\n\nEvite informações desnecessárias.\n\nNão utilize emojis.\n\nNunca afirme que consultou a documentação sem realmente executar a ferramenta.\n\nSua função é atuar como especialista técnico e devolver informações confiáveis ao Agente Orquestrador.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        496,
+        224
+      ],
+      "id": "31b38096-cea0-4d9d-a66f-a88b56269267",
+      "name": "especialista_powerbi"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        320
+      ],
+      "id": "8ec49c7a-c98c-4746-bd94-6760428e06e0",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        240,
+        624
+      ],
+      "id": "2e4ad297-0e49-4927-b4b0-4983da4efe3a",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Ferramenta de consulta à documentação oficial do n8n,\narmazenada no PostgreSQL 18 com PGVector.\n\nUtilize esta ferramenta obrigatoriamente para pesquisar\ninformações sobre nós, workflows, APIs, webhooks,\nJavaScript, integrações e agentes de IA.\n\nRecupere os documentos relevantes e forneça as\ninformações ao agente especialista_n8n.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        432
+      ],
+      "id": "ff0493b4-d79d-4d23-89f1-1727c4d912af",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        560,
+        608
+      ],
+      "id": "2e8a5fce-975f-4315-a1f2-b6ffbbeaa01b",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Ferramenta de consulta à documentação oficial do powerbi,\narmazenada no PostgreSQL 18 com PGVector.\n\nUtilize esta ferramenta obrigatoriamente para pesquisar\ninformações sobre nós, workflows, APIs, webhooks,\nJavaScript, integrações e agentes de IA.\n\nRecupere os documentos relevantes e forneça as\ninformações ao agente especialista_n8n.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        432
+      ],
+      "id": "9c141f60-61f3-4f04-bfff-8e420cb79888",
+      "name": "Postgres PGVector Store1",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        896,
+        592
+      ],
+      "id": "fe95fce7-f36f-4219-bb26-37312c94d2f5",
+      "name": "Embeddings Ollama2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Ferramenta de consulta à documentação oficial do Microsoft Power Automate,\narmazenada no PostgreSQL 18 com PGVector.\n\nUtilize esta ferramenta obrigatoriamente para pesquisar\ninformações sobre nós, workflows, APIs, webhooks,\nJavaScript, integrações e agentes de IA.\n\nRecupere os documentos relevantes e forneça as\ninformações ao agente especialista_n8n.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        896,
+        432
+      ],
+      "id": "1bae3fef-7ede-48de-bdc5-9ec25c563377",
+      "name": "Postgres PGVector Store2",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=Especialista em Microsoft Power Automate responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver Power Automate Cloud, Power Automate Desktop, fluxos, conectores, ações, gatilhos, expressões, variáveis, aprovações, integrações, RPA, AI Builder, Dataverse, Microsoft 365, licenciamento, administração ou qualquer funcionalidade do ecossistema Power Automate.",
+        "text": "=# AGENTE ESPECIALISTA — MICROSOFT POWER AUTOMATE\n\nVocê é um agente especialista em Microsoft Power Automate.\n\nSua função é responder perguntas técnicas sobre:\n\n- Power Automate Cloud\n- Power Automate Desktop\n- Fluxos automatizados\n- Fluxos agendados\n- Conectores e gatilhos\n- Expressões e variáveis\n- Microsoft 365\n- SharePoint\n- Teams\n- Outlook\n- Dataverse\n- AI Builder\n\nREGRAS:\n\n1. Responda somente perguntas relacionadas ao Power Automate.\n2. Consulte a ferramenta PostgreSQL PGVector quando disponível.\n3. Priorize informações recuperadas da documentação.\n4. Não invente resultados de consultas.\n5. Quando a consulta falhar, informe a limitação.\n6. Responda em português brasileiro.\n7. Retorne a resposta ao agente orquestrador.\n8. Não utilize instruções de outros agentes especialistas.\n\nVocê é especialista em Power Automate, não em n8n.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        832,
+        224
+      ],
+      "id": "004aa399-6173-4e2c-b560-0c5eb3c80d7b",
+      "name": "especialista_Power Automate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "especialista_Power Automate",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "especialista_powerbi",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "especialista_n8n",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "especialista_n8n": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "especialista_powerbi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "especialista_n8n",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "especialista_powerbi",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "especialista_Power Automate",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "especialista_n8n",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "especialista_powerbi",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store2": {
+      "ai_tool": [
+        [
+          {
+            "node": "especialista_Power Automate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "especialista_Power Automate": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "6e94337a-4628-492b-8e86-a0a976ebb222",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "iC8B5LVNTR2zM5Lb",
+  "tags": []
+}

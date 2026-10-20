@@ -1,0 +1,564 @@
+{
+  "name": "ferramentas_agendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "tipo_solicitacao"
+            },
+            {
+              "name": "data"
+            },
+            {
+              "name": "horario"
+            },
+            {
+              "name": "solicitante"
+            },
+            {
+              "name": "assunto"
+            },
+            {
+              "name": "telefone"
+            },
+            {
+              "name": "assunto"
+            },
+            {
+              "name": "id_evento"
+            }
+          ]
+        }
+      },
+      "id": "19ea579f-756f-4eca-ab5f-c7cf9f64a7bc",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -448,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "contato@example.com",
+          "mode": "list",
+          "cachedResultName": "contato@example.com"
+        },
+        "start": "={{ $json.inicio }}",
+        "end": "={{ $json.fim }}",
+        "additionalFields": {
+          "description": "={{ $json.descricao }}",
+          "summary": "={{ $json.titulo }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        176
+      ],
+      "id": "df5685d9-4e0a-4857-bd46-8e18f204c91d",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kVrLKbkEVpBuRVEz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d53807f8-2422-49a6-a933-c7b81d0b4313",
+              "name": "inicio",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).plus({ hours: 1 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "78a4d534-2b34-4eb5-b661-0fe76c17e3f1",
+              "name": "fim",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).plus({ hours: 1 }).toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "76aa4876-507c-4cad-9441-b12391c6add2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tipo_solicitacao }}",
+                    "rightValue": "disponibilidade",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b339b2f7-bf06-4550-a65f-8385d270be9d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "disponibilidade"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "52e5a1b8-44cb-486a-8bad-70f34a0e349b",
+                    "leftValue": "={{ $json.tipo_solicitacao }}",
+                    "rightValue": "agendamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "agendamento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e343bde3-0770-432e-84e5-6d443d1b4292",
+                    "leftValue": "={{ $json.tipo_solicitacao }}",
+                    "rightValue": "reagendamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reagendamento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "82e770eb-0cb9-4e51-ae26-c342821630d1",
+                    "leftValue": "={{ $json.tipo_solicitacao }}",
+                    "rightValue": "cancelamento",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cancelamento"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        240
+      ],
+      "id": "72b14475-3ef4-4336-b0c4-105103913250",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "contato@example.com",
+          "mode": "list",
+          "cachedResultName": "contato@example.com"
+        },
+        "timeMin": "={{ $json.inicio }}",
+        "timeMax": "={{ $json.inicio.toDateTime().plus({ week: 1 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "60e21cc5-3524-4e3d-bee8-7dc0a549c762",
+      "name": "Get many events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kVrLKbkEVpBuRVEz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d53807f8-2422-49a6-a933-c7b81d0b4313",
+              "name": "inicio",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "78a4d534-2b34-4eb5-b661-0fe76c17e3f1",
+              "name": "fim",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).plus({ hours: 1 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "67e2ba3a-fe43-4b67-b342-def10f08fc16",
+              "name": "titulo",
+              "value": "=Agendamento feito com {{ $json.solicitante }} - telefone {{ $json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "06ebcbd2-5c99-43f7-bdc0-32da7322cadd",
+              "name": "descricao",
+              "value": "={{ $json.assunto }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        176
+      ],
+      "id": "99578a20-6bfd-49ec-9002-a6d37fbee5ac",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d53807f8-2422-49a6-a933-c7b81d0b4313",
+              "name": "inicio",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "78a4d534-2b34-4eb5-b661-0fe76c17e3f1",
+              "name": "fim",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).plus({ hours: 1 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "67e2ba3a-fe43-4b67-b342-def10f08fc16",
+              "name": "titulo",
+              "value": "=Agendamento feito com {{ $json.solicitante }} - telefone {{ $json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "06ebcbd2-5c99-43f7-bdc0-32da7322cadd",
+              "name": "descricao",
+              "value": "={{ $json.assunto }}",
+              "type": "string"
+            },
+            {
+              "id": "a9d59369-f96b-4eab-9765-b1183e14ce78",
+              "name": "id_evento",
+              "value": "={{ $json.id_evento }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        336
+      ],
+      "id": "9bb47804-3730-4d50-a1e3-7c030cc3c35e",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "contato@example.com",
+          "mode": "list",
+          "cachedResultName": "contato@example.com"
+        },
+        "eventId": "={{ $json.id_evento }}",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        336
+      ],
+      "id": "c60eed77-868a-415e-b94c-0a98e89bbb2b",
+      "name": "Update an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kVrLKbkEVpBuRVEz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "contato@example.com",
+          "mode": "list",
+          "cachedResultName": "contato@example.com"
+        },
+        "eventId": "={{ $json.id_evento }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        496
+      ],
+      "id": "cc6a5a23-0e22-4d48-9ce5-e92a98133f9b",
+      "name": "Delete an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kVrLKbkEVpBuRVEz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d53807f8-2422-49a6-a933-c7b81d0b4313",
+              "name": "inicio",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "78a4d534-2b34-4eb5-b661-0fe76c17e3f1",
+              "name": "fim",
+              "value": "={{ DateTime.fromISO($json.data, { zone: 'America/Sao_Paulo' }).set({ hour: Number($json.horario.split(':')[0]), minute: Number($json.horario.split(':')[1]), second: 0 }).plus({ hours: 1 }).toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "67e2ba3a-fe43-4b67-b342-def10f08fc16",
+              "name": "titulo",
+              "value": "=Agendamento feito com {{ $json.solicitante }} - telefone {{ $json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "06ebcbd2-5c99-43f7-bdc0-32da7322cadd",
+              "name": "descricao",
+              "value": "={{ $json.assunto }}",
+              "type": "string"
+            },
+            {
+              "id": "a9d59369-f96b-4eab-9765-b1183e14ce78",
+              "name": "id_evento",
+              "value": "={{ $json.id_evento }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        496
+      ],
+      "id": "bfb6383c-024f-450e-af51-219b9aee564c",
+      "name": "Edit Fields3"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "tipo_solicitacao": "cancelamento",
+          "data": "2026-10-20",
+          "horario": "08:00",
+          "solicitante": "Pessoa Exemplo",
+          "assunto": "Agendamento de exemplo",
+          "telefone": "TELEFONE_CLIENTE_EXEMPLO",
+          "id_evento": "6bh4oib1l2balttenhtevlug1k"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Update an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Delete an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "5155ed79-0623-41c2-9834-104959568a9d",
+  "meta": {
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "XJj5USaLF3hLxwp2",
+  "tags": [
+    {
+      "updatedAt": "2026-10-20T01:34:50.882Z",
+      "createdAt": "2026-10-20T01:34:50.882Z",
+      "id": "FFhNuYiGEFotx9fB",
+      "name": "calendario"
+    }
+  ]
+}

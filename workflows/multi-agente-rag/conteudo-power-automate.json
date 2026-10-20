@@ -1,0 +1,408 @@
+{
+  "name": "conteudo-power-automate",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -32
+      ],
+      "id": "8a96cab1-65b1-4307-9104-efff24447c79",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "987cfc49-d0a2-42b2-b20b-c8b44304d327",
+              "name": "url",
+              "value": "https://learn.microsoft.com/pt-br/power-automate/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        80,
+        -32
+      ],
+      "id": "1183afde-9327-48aa-a27d-6d818bf1c0f3",
+      "name": "variaveis"
+    },
+    {
+      "parameters": {
+        "jsCode": "const markdown = $input.first().json.data.markdown || \"\";\n\n// Caso venha escapado (algumas versões do Firecrawl fazem isso)\nconst text = markdown\n  .replace(/\\\\r/g, \"\")\n  .replace(/\\\\n/g, \"\\n\")\n  .replace(/\\\\t/g, \"\\t\");\n\n// Regex simples e robusto para Markdown\nconst regex = /\\[(.*?)\\]\\((.*?)\\)/g;\n\nconst seen = new Set();\nconst output = [];\n\nlet match;\n\nwhile ((match = regex.exec(text)) !== null) {\n\n    const title = match[1].trim();\n\n    let url = match[2].trim();\n\n    // Remove âncoras\n    url = url.split(\"#\")[0];\n\n    // Remove query string\n    url = url.split(\"?\")[0];\n\n    // Apenas documentação do Power Automate\n    if (!url.startsWith(\"https://learn.microsoft.com/pt-br/power-automate/\")) {\n        continue;\n    }\n\n    // Ignora arquivos\n    if (/\\.(pdf|png|jpg|jpeg|gif|svg|webp)$/i.test(url)) {\n        continue;\n    }\n\n    // Remove páginas comerciais\n    if (\n        title.toLowerCase().includes(\"comprar\") ||\n        title.toLowerCase().includes(\"experimentar\")\n    ) {\n        continue;\n    }\n\n    // Remove páginas de treinamento\n    if (url.includes(\"/training/\")) {\n        continue;\n    }\n\n    // Remove duplicados\n    if (seen.has(url)) {\n        continue;\n    }\n\n    seen.add(url);\n\n    output.push({\n        json: {\n            title,\n            url\n        }\n    });\n\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -32
+      ],
+      "id": "b8a9b5c8-86ed-4930-8cb2-a63cc7969d59",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "parsers": "=",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "3fa2b7bd-0190-4636-8440-af8dd2e212cf",
+      "name": "gerador-de-links",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "nWI7ptLMUmR1BQzQ",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -32
+      ],
+      "id": "cfe2da97-1289-4f4e-bce2-ecf131639bf3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -16
+      ],
+      "id": "2198b0f6-eaf2-4228-b33b-53547dea4e51",
+      "name": "/scrape1",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "nWI7ptLMUmR1BQzQ",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        -304
+      ],
+      "id": "4048b4af-afb3-455f-bada-fd2371f164d7",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// =====================================================\n// Obtém o markdown\n// =====================================================\n\nlet text = input.data?.markdown || input.markdown || input.content || \"\";\n\n// =====================================================\n// Desescapa caracteres do JSON\n// =====================================================\n\ntext = text\n    .replace(/\\\\n/g, \"\\n\")\n    .replace(/\\\\r/g, \"\")\n    .replace(/\\\\t/g, \"\\t\");\n\n// =====================================================\n// Remove o escape do Markdown\n// =====================================================\n\ntext = text.replace(/\\\\([#>*`\\[\\](){}_|-])/g, \"$1\");\n\n// =====================================================\n// Remove imagens\n// =====================================================\n\ntext = text.replace(/!\\[[^\\]]*?\\]\\([^)]+\\)/g, \"\");\n\n// =====================================================\n// Mantém somente o texto dos links\n// =====================================================\n\ntext = text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, \"$1\");\n\n// =====================================================\n// Remove URLs soltas\n// =====================================================\n\ntext = text.replace(/https?:\\/\\/\\S+/g, \"\");\n\n// =====================================================\n// Remove HTML\n// =====================================================\n\ntext = text.replace(/<[^>]*>/g, \"\");\n\n// =====================================================\n// Remove avisos do GitBook\n// =====================================================\n\nconst blacklist = [\n    \"For the complete documentation index\",\n    \"Markdown versions of documentation pages\",\n    \"Last updated\",\n    \"Was this helpful\",\n    \"AcceptReject\",\n    \"This site uses cookies\"\n];\n\ntext = text\n    .split(\"\\n\")\n    .filter(line => {\n\n        const t = line.trim();\n\n        if (!t) return false;\n\n        return !blacklist.some(item => t.includes(item));\n\n    })\n    .join(\"\\n\");\n\n// =====================================================\n// Normaliza espaços\n// =====================================================\n\ntext = text.replace(/[ \\t]+/g, \" \");\ntext = text.replace(/\\n{3,}/g, \"\\n\\n\");\n\n// =====================================================\n// Extrai H1\n// =====================================================\n\nlet title = \"\";\n\nconst h1 = text.match(/^#\\s+(.*)$/m);\n\nif (h1) {\n\n    title = h1[1].trim();\n\n    text = text.replace(/^#\\s+.*$/m, \"\").trim();\n\n}\n\n// =====================================================\n// Resultado\n// =====================================================\n\nreturn [{\n    json: {\n        technology: \"Power Automate\",\n        url: input.data?.metadata?.url || input.url || \"\",\n        title,\n        content: text\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -16
+      ],
+      "id": "99c47000-3bb0-4b12-b223-b72328a6540e",
+      "name": "Limpeza"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "documents",
+        "embeddingBatchSize": 100,
+        "options": {
+          "columnNames": {
+            "values": {
+              "contentColumnName": "content"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        -16
+      ],
+      "id": "acdcfee5-9200-4e2f-a083-cd837c87c2ed",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        176
+      ],
+      "id": "62f603fa-8821-4513-be2d-294463d47250",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.content }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "={{ $json.technology }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2032,
+        192
+      ],
+      "id": "7c346cf7-a0b5-4479-bd06-5f660f59681b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 1536,
+        "chunkOverlap": 150,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        400
+      ],
+      "id": "dfb068fb-3977-47d8-b250-d5ca8500e31a",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "eb070304-d216-4de4-882f-6bbcc7869bb5",
+      "name": "Wait",
+      "webhookId": "17ab52b9-5099-4b33-988d-c46d1af01786"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -32
+      ],
+      "id": "b75c4f35-9bf0-40b5-85af-6a3041c47316",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "variaveis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "variaveis": {
+      "main": [
+        [
+          {
+            "node": "gerador-de-links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gerador-de-links": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/scrape1": {
+      "main": [
+        [
+          {
+            "node": "Limpeza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpeza": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "/scrape1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "89f66612-d595-466c-ba8e-76918dec53bc",
+  "meta": {
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "oPdxkV8wbddowhJ6",
+  "tags": []
+}

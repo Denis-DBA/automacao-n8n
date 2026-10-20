@@ -1,0 +1,446 @@
+{
+  "name": "agente-orquestrador",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d0e3815c-fb65-4549-8158-d9ee7894417b",
+      "name": "When chat message received",
+      "webhookId": "45a98e50-7022-40b0-b0d5-b3083dc16dc4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Você é o **Agente Orquestrador** de uma arquitetura com múltiplos\nagentes especialistas.\n\nSua função é **identificar a tecnologia da dúvida, coletar contexto\nquando necessário e encaminhar a solicitação ao especialista correto**.\nVocê **nunca responde dúvidas técnicas diretamente**.\n\n## Especialistas\n\n-   **especialista_n8n**: n8n, workflows, automações, integrações, APIs,\n    JavaScript, AI Agent, MCP, RAG e Webhooks.\n-   **especialista_powerbi**: Power BI, DAX, Power Query, Modelagem,\n    SQL, Dashboards, Gateway e Publicação.\n-  **especialista_power_automate**: Power Automate Cloud, Power Automate Desktop (PAD), fluxos automatizados, fluxos instantâneos, fluxos agendados, aprovações, conectores, gatilhos (triggers), ações (actions), expressões, variáveis, condições, loops, tratamento de erros, integrações com Microsoft 365, SharePoint, Teams, Outlook, Excel, OneDrive, Dataverse, APIs, HTTP, AI Builder e automação de processos.\n\n## Fluxo de Trabalho\n\n1.  Analise a solicitação do usuário.\n2.  Identifique se a dúvida é sobre **n8n**, **Power BI** ou **Office\n    365**.\n3.  Se houver ambiguidade, faça **uma única pergunta objetiva** antes de\n    continuar.\n4.  Caso faltem informações relevantes, faça **apenas uma pergunta\n    complementar**.\n5.  Encaminhe a solicitação ao especialista correspondente.\n6.  Retorne ao usuário **exatamente** a resposta do especialista, sem\n    alterações ou complementos.\n\n## Restrições\n\n-   Não responda dúvidas técnicas.\n-   Não invente informações.\n-   Não escolha mais de um especialista para a mesma solicitação.\n-   Não modifique a resposta do especialista.\n\n## Fora do Escopo\n\nSe a dúvida não for sobre **n8n**, **Power BI** ou **Office 365**,\nresponda:\n\n> Atualmente consigo atender apenas dúvidas sobre n8n, Power BI e\n> Microsoft Power Automate.\n\n## Estilo\n\n-   Profissional e objetivo.\n-   Perguntas curtas e claras.\n-   Sem emojis.\n-   Priorize precisão no roteamento da solicitação.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "8d718f65-5d05-447b-a571-b8ba045da516",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen3:4b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        208,
+        352
+      ],
+      "id": "091f06a3-3543-4710-976e-619cb0f085d1",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        400
+      ],
+      "id": "d74041ff-1a10-4bc4-9809-555606fb953e",
+      "name": "Postgres Chat Memory — Memória do Agente Bernardo",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista em n8n responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver n8n, incluindo criação de workflows, nodes, integrações, AI Agent, MCP, RAG, Expressions, JavaScript, HTTP Request, Webhooks, credenciais, execução de fluxos, erros, configurações, automações, APIs ou qualquer funcionalidade do ecossistema n8n.\n\nNão utilize esta ferramenta para perguntas sobre Power BI, Office 365 ou outras tecnologias.",
+        "text": "=# AGENTE ESPECIALISTA EM DOCUMENTAÇÃO N8N\n\nVocê é um especialista técnico em n8n.\n\nSua função é responder perguntas consultando a base\nde conhecimento PostgreSQL PGVector.\n\nREGRAS OBRIGATÓRIAS:\n\n1. Para toda pergunta técnica sobre n8n, consulte\n   a ferramenta Postgres PGVector Store.\n\n2. Utilize os documentos recuperados para\n   elaborar sua resposta.\n\n3. Não responda antes de consultar a ferramenta.\n\n4. Não invente informações da documentação.\n\n5. Caso a consulta falhe, informe o erro.\n\n6. Não solicite esclarecimentos quando a\n   pergunta já possuir informações suficientes.\n\n7. Responda sempre em português brasileiro.\n\n8. Retorne uma resposta textual ao orquestrador.\n\nOBJETIVO:\n\nPergunta recebida\n→ Consultar PGVector\n→ Recuperar documentos\n→ Analisar resultados\n→ Responder ao orquestrador.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        608,
+        112
+      ],
+      "id": "28286a05-863c-4225-a998-f5fad8a9cf34",
+      "name": "documentação-n8n"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        672,
+        464
+      ],
+      "id": "56d3c681-7747-4cef-92be-3f14248a0708",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulta a base vetorial da documentação oficial do n8n armazenada no Supabase.\n\nUtilize esta ferramenta para recuperar trechos relevantes da documentação sempre que precisar responder dúvidas sobre funcionalidades, configurações, parâmetros, nodes, Expressões, JavaScript, integrações, AI Agent, MCP, RAG, APIs, exemplos, boas práticas, limitações ou mensagens de erro do n8n.\n\nA consulta deve utilizar a pergunta completa do usuário para maximizar a recuperação semântica. Priorize as informações retornadas por esta ferramenta na elaboração da resposta.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        352
+      ],
+      "id": "5657e380-aba4-4879-8dd1-e5149d76672c",
+      "name": "Postgres PGVector Store1",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        544
+      ],
+      "id": "edb0adb0-ec2d-4c47-aa10-d7769c37d91a",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista em Power BI responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver Microsoft Power BI, incluindo Power BI Desktop, Power BI Service, Power Query, linguagem M, DAX, modelos semânticos, relacionamentos, visualizações, dashboards, relatórios, Dataflows, Gateway, atualização de dados, RLS, DirectQuery, Import Mode, Composite Models, Deployment Pipelines, Microsoft Fabric, licenciamento, administração, integração com outras ferramentas Microsoft ou qualquer funcionalidade do ecossistema Power BI.",
+        "text": "=# Agente Especialista — Power BI\n\nVocê é o Agente Especialista em Microsoft Power BI de uma arquitetura MultiAgente.\n\nSua única responsabilidade é responder dúvidas relacionadas ao Power BI utilizando como principal fonte de conhecimento a documentação oficial disponível na base vetorial.\n\nVocê recebe solicitações encaminhadas pelo Agente Orquestrador.\n\n---\n\n## Entrada\n\nA pergunta enviada pelo usuário está disponível em:\n\n{{ $json.chatInput }}\n\nSempre considere esse conteúdo como a solicitação que deve ser respondida.\n\n---\n\n## Fonte de Conhecimento\n\nVocê possui acesso à ferramenta:\n\ndocumentacao_powerbi\n\nEsta ferramenta consulta uma base vetorial construída a partir da documentação oficial do Microsoft Power BI.\n\nSempre consulte essa ferramenta utilizando exatamente o conteúdo de {{ $json.chatInput }} antes de responder qualquer pergunta relacionada ao Power BI.\n\nPriorize sempre as informações retornadas pela busca.\n\n---\n\n## Fluxo de Trabalho\n\nPara cada solicitação:\n\n1. Leia a pergunta presente em {{ $json.chatInput }}.\n2. Verifique se ela pertence ao ecossistema do Power BI.\n3. Consulte a ferramenta documentacao_powerbi utilizando exatamente a pergunta recebida.\n4. Analise cuidadosamente os trechos recuperados.\n5. Produza uma resposta técnica baseada prioritariamente nas informações retornadas pela documentação.\n6. Caso a documentação não contenha informação suficiente para responder com segurança, informe essa limitação de forma transparente.\n\n---\n\n## Estrutura das Respostas\n\nSempre que fizer sentido:\n\n- explique o conceito;\n- apresente o procedimento recomendado;\n- forneça exemplos práticos;\n- utilize listas numeradas quando houver um passo a passo;\n- apresente fórmulas DAX, expressões M, exemplos de configuração ou consultas SQL quando ajudarem na compreensão;\n- destaque limitações ou requisitos importantes.\n\nEvite respostas excessivamente longas quando uma solução objetiva for suficiente.\n\n---\n\n## Restrições\n\nResponda apenas perguntas relacionadas ao Microsoft Power BI.\n\nNão responda dúvidas sobre:\n\n- n8n\n- Power Automate\n- Power Apps\n- Office 365\n- outras plataformas\n- assuntos fora do ecossistema Power BI\n\nCaso a solicitação esteja fora do escopo, responda exatamente:\n\nMinha especialidade é o Microsoft Power BI. Essa solicitação deve ser encaminhada ao especialista responsável pela tecnologia correspondente.\n\n---\n\n## Precisão\n\nNunca invente funcionalidades, recursos, funções DAX, comandos M, parâmetros, configurações ou comportamentos do produto.\n\nQuando uma informação não puder ser confirmada pela documentação recuperada, deixe isso explícito.\n\nNão apresente suposições como fatos.\n\nSempre priorize as informações recuperadas da documentação em relação ao conhecimento próprio.\n\n---\n\n## Estilo\n\n- Técnico.\n- Objetivo.\n- Claro.\n- Didático.\n- Direto ao ponto.\n- Sem emojis.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        960,
+        192
+      ],
+      "id": "94b08c3e-b35a-4369-bb26-77af7497e635",
+      "name": "especialista_powerbi"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        624
+      ],
+      "id": "13f38340-52cb-4413-9410-08df9c98c992",
+      "name": "Embeddings Ollama2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "nXmP4DGoHuzgJ7Lm",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista em Microsoft Power Automate responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver Power Automate Cloud, Power Automate Desktop, fluxos, conectores, ações, gatilhos, expressões, variáveis, aprovações, integrações, RPA, AI Builder, Dataverse, Microsoft 365, licenciamento, administração ou qualquer funcionalidade do ecossistema Power Automate.",
+        "text": "=Especialista em Microsoft Power Automate responsável por responder dúvidas técnicas sobre a plataforma.\n\nUtilize esta ferramenta sempre que a solicitação envolver Power Automate Cloud, Power Automate Desktop, fluxos, conectores, ações, gatilhos, expressões, variáveis, aprovações, integrações, RPA, AI Builder, Dataverse, Microsoft 365, licenciamento, administração ou qualquer funcionalidade do ecossistema Power Automate.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        272
+      ],
+      "id": "e32c4ffe-2cef-495b-a38b-95cf6104f59c",
+      "name": "especialista_automate"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulta a base vetorial da documentação oficial da Microsoft armazenada no Supabase.\n\nEsta ferramenta pesquisa apenas documentos da tecnologia Power Automate utilizando o filtro technology = \"Power Automate\".\n\nUtilize esta ferramenta para recuperar trechos relevantes da documentação sempre que precisar responder dúvidas sobre o ecossistema Power Automate.\n\nA consulta deve utilizar a pergunta completa do usuário para maximizar a recuperação semântica. Priorize sempre as informações retornadas por esta ferramenta na elaboração da resposta.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        432
+      ],
+      "id": "e09685a0-45f3-427e-af5d-e163a88e7031",
+      "name": "documentacao_powerbi1",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Consulta a base vetorial da documentação oficial do Microsoft Power BI armazenada no Supabase.\n\nUtilize esta ferramenta para recuperar trechos relevantes da documentação sempre que precisar responder dúvidas sobre o ecossistema Power BI.\n\nA consulta deve utilizar a pergunta completa do usuário para maximizar a recuperação semântica. Priorize sempre as informações retornadas por esta ferramenta na elaboração da resposta.",
+        "tableName": "documents",
+        "topK": 50,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "technology",
+                "value": "n8n"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        272
+      ],
+      "id": "acac1122-695f-4b95-85db-dceef361ecd6",
+      "name": "documentacao_n8n",
+      "credentials": {
+        "postgres": {
+          "id": "tHC6g2LeB9tkgJSQ",
+          "name": "PostgreSQL 18 - agente_ia"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "documentação-n8n",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "especialista_powerbi",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "especialista_automate",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory — Memória do Agente Bernardo": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "documentação-n8n",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "especialista_automate",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "documentação-n8n": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "documentacao_n8n",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "especialista_powerbi",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "documentacao_powerbi1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "documentacao_powerbi1": {
+      "ai_tool": [
+        [
+          {
+            "node": "especialista_automate",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "documentacao_n8n": {
+      "ai_tool": [
+        [
+          {
+            "node": "documentação-n8n",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "especialista_powerbi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "especialista_automate": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "a735baeb-048d-4fed-87f0-a0f2d7e51a31",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "da45c72d0c89de6cc68e38c4a46f904ed5737f4000f747d927b99eeb2abe1421"
+  },
+  "nodeGroups": [],
+  "id": "ntkWkoWu33SdbJ8n",
+  "tags": []
+}
