@@ -1,0 +1,2289 @@
+{
+    "name":  "Agente de Atendimento Inteligente ??? WhatsApp | IA + CRM",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "content":  "##  ???? Processamento de Entrada\nIdentifica o tipo de cada mensagem recebida pelo WhatsApp e encaminha para o processamento adequado, convertendo ??udios, imagens e documentos em texto antes de unificar todos os fluxos.",
+                                         "height":  824,
+                                         "width":  2348,
+                                         "color":  7
+                                     },
+                      "id":  "a8e301e8-89fd-461a-8904-1e128d368f90",
+                      "name":  "Sticky Note ed2c234f",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       -2800,
+                                       880
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "???? Contexto e An??lise\nCarrega a sess??o do usu??rio a partir do PostgreSQL e identifica o sentimento e o idioma da mensagem para fornecer contexto ao agente de IA.",
+                                         "height":  192,
+                                         "width":  300,
+                                         "color":  7
+                                     },
+                      "id":  "00a1e3f2-61a0-4031-8cdd-5deaa9b88d31",
+                      "name":  "Sticky Note 82e09893",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       -896,
+                                       944
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "## ???? N??cleo do Agente de IA\nA IA responde utilizando a base de conhecimento, a mem??ria de conversas e as ferramentas de neg??cio (Google Calendar, HubSpot, Slack e Gmail), retornando uma inten????o estruturada para direcionar o fluxo de atendimento.",
+                                         "height":  816,
+                                         "width":  1688,
+                                         "color":  7
+                                     },
+                      "id":  "36b39224-6ee2-4e21-b112-ab4dc68a39aa",
+                      "name":  "Sticky Note 915a471b",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       -464,
+                                       880
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "???? Direcionamento por Inten????o\nEncaminha a inten????o identificada para o fluxo de atendimento correspondente ??? agendamento, capta????o de leads, envio de documentos, abertura de chamados, encaminhamento para atendimento humano ou perguntas frequentes (FAQ) ??? e, ao final, unifica os resultados.",
+                                         "height":  1184,
+                                         "width":  1194,
+                                         "color":  7
+                                     },
+                      "id":  "b963c6bc-9f01-4f67-804a-9bb6be6c42fe",
+                      "name":  "Sticky Note b0a94513",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       1216,
+                                       512
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "???? Sa??da e Persist??ncia de Dados\nArmazena o hist??rico da conversa no PostgreSQL, registra m??tricas de an??lise e, em seguida, formata e envia a resposta ao cliente pelo WhatsApp.",
+                                         "height":  468,
+                                         "width":  460,
+                                         "color":  7
+                                     },
+                      "id":  "9355d852-9c29-47f8-81ed-653b31b0c999",
+                      "name":  "Sticky Note ae158859",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       2416,
+                                       864
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "toBinary",
+                                         "sourceProperty":  "audio",
+                                         "options":  {
+                                                         "mimeType":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.TipoMine }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.convertToFile",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       -1840,
+                                       1088
+                                   ],
+                      "id":  "2b0c6282-6db1-47fc-9812-b77f54f3efb7",
+                      "name":  "Convert to File"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://whisper.example.invalid/transcrever",
+                                         "sendBody":  true,
+                                         "contentType":  "multipart-form-data",
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "parameterType":  "formBinaryData",
+                                                                                       "name":  "file",
+                                                                                       "inputDataFieldName":  "data"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.5,
+                      "position":  [
+                                       -1616,
+                                       1088
+                                   ],
+                      "id":  "3adbc4d9-a17f-4c47-bd21-060dde939981",
+                      "name":  "Transcrever whisper-api"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "toBinary",
+                                         "sourceProperty":  "=imagem",
+                                         "options":  {
+                                                         "mimeType":  "={{ $json.TipoMine }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.convertToFile",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       -1840,
+                                       1280
+                                   ],
+                      "id":  "dc7bf8a6-8952-48f5-9409-ddec059be7f6",
+                      "name":  "Convert to File2"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://ollama.example.invalid/api/chat",
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ {\n  model: \"gemma3:4b\",\n  stream: false,\n  messages: [\n    {\n      role: \"user\",\n      content: \"Descreva esta imagem em portugu??s. Informe os objetos, cores e detalhes vis??veis. N??o invente informa????es que n??o possam ser observadas.\",\n      images: [\n        $(\u002702-Padroniza os dados\u0027).item.json.MensagemMedia\n      ]\n    }\n  ]\n} }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.5,
+                      "position":  [
+                                       -1616,
+                                       1280
+                                   ],
+                      "id":  "253e1506-6ee0-41ec-ad38-e890bb3e0881",
+                      "name":  "Descrever imagem usando: gemma3:4b"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "toBinary",
+                                         "sourceProperty":  "documento",
+                                         "options":  {
+                                                         "mimeType":  "={{ $json.TipoMine }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.convertToFile",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       -1840,
+                                       1472
+                                   ],
+                      "id":  "75edab00-77b7-4550-9b8a-93bc392c4463",
+                      "name":  "Convert to File3"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "pdf",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.extractFromFile",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       -1616,
+                                       1472
+                                   ],
+                      "id":  "49ba2f10-d8d8-415a-b742-ee3cffa7959e",
+                      "name":  "Extract from File"
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "# ???? Agente de Atendimento Inteligente ??? WhatsApp | IA + CRM\n\n### ???? Sobre o projeto\nSistema inteligente de atendimento automatizado via WhatsApp, integrando intelig??ncia artificial, bancos de dados, automa????o de processos e CRM.\n\n### ??????? Tecnologias utilizadas\n- **Automa????o:** n8n\n- **IA:** Ollama (Qwen3.5:9b e Gemma3:4b)\n- **Embeddings:** nomic-embed-text\n- **Banco de dados:** PostgreSQL + PGVector\n- **Cache e mensagens:** Redis\n- **CRM:** HubSpot\n- **Observabilidade:** Langfuse\n- **WhatsApp:** Evolution Go\n- **??udio:** Whisper\n- **Infraestrutura:** Docker\n\n### ?????? Funcionamento\n1. Recebe mensagens do WhatsApp pela Evolution Go.\n2. Processa texto, ??udio, imagens e documentos.\n3. Consulta e registra clientes no PostgreSQL.\n4. O agente de IA interpreta as solicita????es.\n5. Utiliza RAG e ferramentas para apoiar as respostas.\n6. Integra contatos comerciais ao HubSpot CRM.\n7. Direciona a????es para Gmail, Google Calendar, Google Drive e Slack.\n8. Prepara registros de observabilidade no Langfuse.\n\n### ???? Status do projeto\n- [x] Estrutura do workflow configurada\n- [x] HubSpot integrado como ferramenta\n- [x] Langfuse configurado para envio de traces\n- [ ] Testes funcionais das integra????es\n- [ ] Valida????o de seguran??a e tratamento de erros\n- [ ] Valida????o para produ????o\n\n### ???? Seguran??a\nCredenciais gerenciadas no n8n. O JSON destinado ao GitHub deve permanecer sanitizado, sem tokens ou dados pessoais reais.",
+                                         "height":  880,
+                                         "width":  1104
+                                     },
+                      "id":  "69155371-6fa7-4183-be85-f586e758363f",
+                      "name":  "Sticky Note d192ba",
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "position":  [
+                                       -432,
+                                       -112
+                                   ],
+                      "typeVersion":  1
+                  },
+                  {
+                      "parameters":  {
+                                         "httpMethod":  "POST",
+                                         "path":  "CONFIGURE_WHATSAPP_WEBHOOK_PATH",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.webhook",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       -2912,
+                                       1200
+                                   ],
+                      "id":  "3f65c2a6-ffb3-44fd-8c73-bd40c3e82f27",
+                      "name":  "01-Recebe eventos do WhatsApp",
+                      "webhookId":  "CONFIGURE_WEBHOOK_ID"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "624cb769-e8e3-4f29-9f38-c589bc7ab05a",
+                                                                                     "name":  "Nome",
+                                                                                     "value":  "={{ $json.body.data.Info?.PushName ?? $json.body.data.pushName ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "5a1ec078-f552-4716-8c2e-ab08cd5e0126",
+                                                                                     "name":  "telefone",
+                                                                                     "value":  "={{ String($json.body.data.Info?.Sender ?? $json.body.data.key?.remoteJid ?? \u0027\u0027).split(\u0027@\u0027)[0].replace(/\\D/g, \u0027\u0027) }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "89b165dd-48b2-4a21-b1da-e3277525f4ce",
+                                                                                     "name":  "Texto",
+                                                                                     "value":  "={{ $json.body.data.Info?.Type ?? $json.body.data.messageType ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c96b7076-cd95-48b4-989b-644e3b53db9f",
+                                                                                     "name":  "MensagemTexto",
+                                                                                     "value":  "={{ $json.body.data.Message?.conversation ?? $json.body.data.message?.conversation ?? $json.body.data.Message?.extendedTextMessage?.text ?? $json.body.data.message?.extendedTextMessage?.text ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "0b404a71-4b3c-401c-85f7-75168550b2b6",
+                                                                                     "name":  "Tipomedia",
+                                                                                     "value":  "={{ $json.body.data.Info?.MediaType ?? $json.body.data.messageType ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "30407b4c-b959-4476-b817-1dcfbd83bf42",
+                                                                                     "name":  "MensagemMedia",
+                                                                                     "value":  "={{ $json.body.data.Message?.base64 ?? $json.body.data.message?.base64 ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "04b34cae-3f66-4fce-b62b-97a1959e5af6",
+                                                                                     "name":  "TipoMine",
+                                                                                     "value":  "={{ $json.body.data.Message?.audioMessage?.mimetype ?? $json.body.data.Message?.imageMessage?.mimetype ?? $json.body.data.Message?.documentMessage?.mimetype ?? $json.body.data.message?.audioMessage?.mimetype ?? $json.body.data.message?.imageMessage?.mimetype ?? $json.body.data.message?.documentMessage?.mimetype ?? \u0027\u0027 }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -2720,
+                                       1200
+                                   ],
+                      "id":  "c76f07be-bd0f-4134-9da4-aa99e62185d6",
+                      "name":  "02-Padroniza os dados"
+                  },
+                  {
+                      "parameters":  {
+                                         "rules":  {
+                                                       "values":  [
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "leftValue":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.Texto }}",
+                                                                                                                    "rightValue":  "^(text|conversation|extendedTextMessage)$",
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "regex"
+                                                                                                                                 },
+                                                                                                                    "id":  "5e0e7387-aac9-439e-9ae4-32caf35c173c"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         },
+                                                                          "renameOutput":  true,
+                                                                          "outputKey":  "texto"
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "id":  "7d3e42c9-4eb4-4a3b-9f39-67b002a3cbdf",
+                                                                                                                    "leftValue":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.Tipomedia }}",
+                                                                                                                    "rightValue":  "ptt",
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 }
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         },
+                                                                          "renameOutput":  true,
+                                                                          "outputKey":  "audio_01"
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "id":  "7babbc34-f575-47b1-844d-8d37cb308784",
+                                                                                                                    "leftValue":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.TipoMine }}",
+                                                                                                                    "rightValue":  "image/",
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "startsWith"
+                                                                                                                                 }
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         },
+                                                                          "renameOutput":  true,
+                                                                          "outputKey":  "imagem"
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "id":  "ea83661d-441e-4b17-8481-d9c604b7424e",
+                                                                                                                    "leftValue":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.TipoMine }}",
+                                                                                                                    "rightValue":  "application/pdf",
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 }
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         },
+                                                                          "renameOutput":  true,
+                                                                          "outputKey":  "documento"
+                                                                      }
+                                                                  ]
+                                                   },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.switch",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       -2288,
+                                       1152
+                                   ],
+                      "id":  "fc2f3cb9-11e5-4b33-bcf1-74e4d4d88197",
+                      "name":  "03-Separa os tipos de mensagens"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "e2f2fab1-8fa7-414f-9b3c-44271b2b0ce4",
+                                                                                     "name":  "Mensagem",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.MensagemTexto }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -1392,
+                                       896
+                                   ],
+                      "id":  "33dbc83b-09b9-4b59-b156-444222f29bb6",
+                      "name":  "Prepara o texto"
+                  },
+                  {
+                      "parameters":  {
+                                         "numberInputs":  4
+                                     },
+                      "id":  "e47dbf52-cafb-49d4-9455-f7ca067847f8",
+                      "name":  "04-Unifica os tipos de mensagens",
+                      "type":  "n8n-nodes-base.merge",
+                      "position":  [
+                                       -1168,
+                                       1152
+                                   ],
+                      "typeVersion":  3.2
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "277d9b72-6fd7-45cc-b5a8-f7300d1e685c",
+                                                                                     "name":  "audio",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.MensagemMedia }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -2064,
+                                       1088
+                                   ],
+                      "id":  "2fe300cc-a89a-4613-ac48-fe830e72303c",
+                      "name":  "Transcri????o de ??udio"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "f8a2ad67-91f2-4a55-820a-84d7cda4b83b",
+                                                                                     "name":  "Mensagem",
+                                                                                     "value":  "={{ $json.texto }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "7e83dc88-3fd6-4cdd-95fc-8ca622e24387",
+                                                                                     "name":  "",
+                                                                                     "value":  "",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -1392,
+                                       1088
+                                   ],
+                      "id":  "544a5e41-4e61-4849-9112-f045bcce207f",
+                      "name":  "Transcri????o de ??udio1"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "e1db9ef2-2912-4a53-9fc6-c4b9dbb57bed",
+                                                                                     "name":  "documento",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.MensagemMedia }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "ab5245a7-7c40-4144-b82e-a2644013c0de",
+                                                                                     "name":  "TipoMine",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.TipoMine }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -2064,
+                                       1472
+                                   ],
+                      "id":  "1c2687fe-9bdb-4d29-9ef1-3502d0a00a65",
+                      "name":  "Extra????o de PDF"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "bbd7d699-3215-476d-8523-4e2901f2abe0",
+                                                                                     "name":  "Mensagem",
+                                                                                     "value":  "={{ $json.text }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -1392,
+                                       1472
+                                   ],
+                      "id":  "96d4802f-9ea5-470e-b436-123f0d5c7c6f",
+                      "name":  "Extra????o de PDF1"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "87f13c19-4e09-43f8-9ebe-f1a7cc2176f7",
+                                                                                     "name":  "imagem",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.MensagemMedia }}",
+                                                                                     "type":  "string"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "3dbe827c-cbd0-405a-b23e-8d73d81440e8",
+                                                                                     "name":  "TipoMine",
+                                                                                     "value":  "={{ $(\u002702-Padroniza os dados\u0027).item.json.TipoMine }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -2064,
+                                       1280
+                                   ],
+                      "id":  "b38ba1f3-9bfb-4f86-945e-8cf18b51b0f4",
+                      "name":  "Descri????o de Imagem"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "1bce1c97-1dc6-4f3a-b203-917a1e4ac288",
+                                                                                     "name":  "Mensagem",
+                                                                                     "value":  "={{ \u0027Descri????o da imagem recebida:\\n\\n\u0027 + $json.message.content }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.5,
+                      "position":  [
+                                       -1392,
+                                       1280
+                                   ],
+                      "id":  "7281fa20-89b7-498f-8d54-6a419c1bfbb6",
+                      "name":  "Descri????o de Imagem1"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "executeQuery",
+                                         "query":  "INSERT INTO public.clientes (nome, telefone)\nVALUES ($1, $2)\nON CONFLICT (telefone)\nDO UPDATE SET\n    nome = EXCLUDED.nome,\n    atualizado_em = NOW()\nRETURNING id, nome, telefone, criado_em, atualizado_em;",
+                                         "options":  {
+                                                         "queryReplacement":  "={{ [\n  $(\u002702-Padroniza os dados\u0027).item.json.Nome,\n  $(\u002702-Padroniza os dados\u0027).item.json.telefone\n] }}"
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       -800,
+                                       1168
+                                   ],
+                      "id":  "910d23a2-578d-4999-abbc-2caa0fd1da9a",
+                      "name":  "05-Cadastrar Cliente no PostgreSQL",
+                      "alwaysOutputData":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "inputText":  "={{ $(\u002704-Unifica os tipos de mensagens\u0027).item.json.Mensagem }}",
+                                         "options":  {
+                                                         "categories":  "Positivo, Neutro, Negativo, Urgente, Frustrado",
+                                                         "includeDetailedResults":  true
+                                                     }
+                                     },
+                      "id":  "203b8474-6bd9-4191-ba11-654daa90ce4a",
+                      "name":  "06-Analisar Sentimento e Idioma",
+                      "type":  "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+                      "position":  [
+                                       -448,
+                                       1056
+                                   ],
+                      "retryOnFail":  true,
+                      "typeVersion":  1.1,
+                      "alwaysOutputData":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "promptType":  "define",
+                                         "text":  "={{ $(\u002704-Unifica os tipos de mensagens\u0027).first().json.Mensagem }}",
+                                         "options":  {
+                                                         "systemMessage":  "=Voc?? ?? um assistente avan??ado de Intelig??ncia Artificial especializado em atendimento ao cliente, com acesso a diversas ferramentas e bases de conhecimento.\n\n## Contexto do Cliente\n\n- Sentimento: {{ $json.sentimentAnalysis?.category ?? \u0027N??o identificado\u0027 }}\n- Telefone: {{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.telefone }}\n- Nome do cliente: {{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.nome }}\n- Mensagem: {{ $(\u002704-Unifica os tipos de mensagens\u0027).first().json.Mensagem }}\n\n## Ferramentas Dispon??veis\n\n1. Base de Conhecimento (PGVector) ??? Consultar a documenta????o da empresa.\n2. Consultar Clientes - PostgreSQL ??? Consultar informa????es cadastrais dos clientes.\n3. Gerenciar Tickets - PostgreSQL ??? Criar chamados de suporte.\n\n## Instru????es\n\n- Utilize a Base de Conhecimento para responder a perguntas sobre produtos, pol??ticas e procedimentos.\n- Consulte as informa????es cadastrais dos clientes no PostgreSQL quando necess??rio.\n- Crie chamados para problemas complexos utilizando a ferramenta de Tickets PostgreSQL.\n\nSempre identifique a inten????o do cliente e responda de maneira profissional. Inclua a inten????o na sa??da estruturada.\n\n## Formato da Resposta Final\n\nRetorne exclusivamente um objeto JSON v??lido, sem Markdown e sem blocos de c??digo.\n\nUtilize exatamente estes quatro campos:\n- intent: inten????o identificada.\n- response: resposta ao cliente.\n- sentiment: sentimento identificado.\n- requires_human: true ou false (booleano).\n\nValores permitidos para intent:\nagendamento, captacao_lead, solicitacao_documento, atendimento_humano, informacao, outros.\n\nN??o adicione outros campos nem coloque o JSON dentro de \"output\"."
+                                                     }
+                                     },
+                      "id":  "2f953242-1d6f-4909-a16b-a26928e1792b",
+                      "name":  "07 ??? Agente de Atendimento WhatsApp",
+                      "type":  "@n8n/n8n-nodes-langchain.agent",
+                      "position":  [
+                                       336,
+                                       1072
+                                   ],
+                      "typeVersion":  3.1
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "gemma3:4b",
+                                         "options":  {
+                                                         "think":  false,
+                                                         "temperature":  0,
+                                                         "keepAlive":  "5m",
+                                                         "lowVram":  false,
+                                                         "numCtx":  4096,
+                                                         "numGpu":  -1,
+                                                         "numPredict":  256
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmOllama",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -448,
+                                       1408
+                                   ],
+                      "id":  "e047a5ce-54af-470b-b9d0-be6cfaef41d7",
+                      "name":  "Modelo LLM - Ollama"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "qwen3.5:9b",
+                                         "options":  {
+                                                         "think":  false,
+                                                         "temperature":  0.1,
+                                                         "keepAlive":  "5m",
+                                                         "lowVram":  false,
+                                                         "numCtx":  8192,
+                                                         "numGpu":  -1,
+                                                         "numPredict":  2048
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatOllama",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -192,
+                                       1360
+                                   ],
+                      "id":  "35d7002c-5aa1-4a55-bf92-ba1162ea968b",
+                      "name":  "Modelo LLM - Ollama1"
+                  },
+                  {
+                      "parameters":  {
+                                         "sessionIdType":  "customKey",
+                                         "sessionKey":  "={{ \u0027whatsapp_\u0027 + String($(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.telefone) }}"
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+                      "typeVersion":  1.4,
+                      "position":  [
+                                       -48,
+                                       1360
+                                   ],
+                      "id":  "7832dae9-41bf-4be5-a21d-306b68d6badf",
+                      "name":  "Mem??ria de Conversas - PostgreSQL"
+                  },
+                  {
+                      "parameters":  {
+                                         "sendTo":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027To\u0027, `Endere??o de e-mail do destinat??rio`, \u0027string\u0027) }}",
+                                         "subject":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Subject\u0027, `Assunto da mensagem`, \u0027string\u0027) }}",
+                                         "emailType":  "text",
+                                         "message":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Message\u0027, `Conte??do do e-mail`, \u0027string\u0027) }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "adcb2c0d-a64c-463d-991b-9570aa3fe5a2",
+                      "name":  "Enviar E-mail - Gmail",
+                      "type":  "n8n-nodes-base.gmailTool",
+                      "position":  [
+                                       128,
+                                       1360
+                                   ],
+                      "webhookId":  "CONFIGURE_WEBHOOK_ID",
+                      "typeVersion":  2.2
+                  },
+                  {
+                      "parameters":  {
+                                         "calendar":  {
+                                                          "__rl":  true,
+                                                          "value":  "CONFIGURE_CALENDAR_ID",
+                                                          "mode":  "id"
+                                                      },
+                                         "start":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Start\u0027, `Data e hor??rio de in??cio do agendamento, confirmados pelo cliente, no formato ISO 8601, com fuso hor??rio America/Sao_Paulo.`, \u0027string\u0027) }}",
+                                         "end":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027End\u0027, `Data e hor??rio de t??rmino do agendamento, posteriores ao in??cio, no formato ISO 8601, com fuso hor??rio America/Sao_Paulo.`, \u0027string\u0027) }}",
+                                         "additionalFields":  {
+                                                                  "description":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Description\u0027, ``, \u0027string\u0027) }}",
+                                                                  "summary":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Summary\u0027, `T??tulo curto e objetivo do compromisso, contendo o assunto do agendamento.`, \u0027string\u0027) }}"
+                                                              }
+                                     },
+                      "id":  "49354933-bda5-44fc-87d8-3a4eab54500c",
+                      "name":  "Gerenciar Agendamentos - Google Calendar",
+                      "type":  "n8n-nodes-base.googleCalendarTool",
+                      "position":  [
+                                       288,
+                                       1360
+                                   ],
+                      "typeVersion":  1.3
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "retrieve-as-tool",
+                                         "toolDescription":  "Consulta a base de conhecimento da empresa no PostgreSQL com PGVector. Utilize esta ferramenta para pesquisar informa????es sobre produtos, servi??os, pol??ticas, procedimentos e d??vidas frequentes. Responda com base nos documentos encontrados, sem inventar informa????es. Se n??o encontrar informa????es suficientes, informe a limita????o e solicite esclarecimentos ou encaminhe para atendimento humano quando necess??rio.",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       432,
+                                       1360
+                                   ],
+                      "id":  "cb913b21-e12e-4a71-8f0b-41a929e66237",
+                      "name":  "Base de Conhecimento - PGVector"
+                  },
+                  {
+                      "parameters":  {
+                                         "model":  "nomic-embed-text:latest"
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.embeddingsOllama",
+                      "typeVersion":  1,
+                      "position":  [
+                                       432,
+                                       1520
+                                   ],
+                      "id":  "906842e4-268b-49ae-8b4c-3061335d66f5",
+                      "name":  "Embeddings - Ollama",
+                      "notesInFlow":  false,
+                      "retryOnFail":  false,
+                      "alwaysOutputData":  false,
+                      "executeOnce":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "descriptionType":  "manual",
+                                         "toolDescription":  "Consulta o cadastro de um cliente no PostgreSQL utilizando seu n??mero de telefone. Use esta ferramenta somente quando precisar verificar informa????es cadastrais. Nunca consulte todos os clientes.",
+                                         "operation":  "select",
+                                         "schema":  {
+                                                        "__rl":  true,
+                                                        "value":  "public",
+                                                        "mode":  "list",
+                                                        "cachedResultName":  "public"
+                                                    },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "clientes",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "clientes"
+                                                   },
+                                         "limit":  1,
+                                         "where":  {
+                                                       "values":  [
+                                                                      {
+                                                                          "column":  "=telefone",
+                                                                          "value":  "={{ $(\u002702-Padroniza os dados\u0027).first().json.telefone }}"
+                                                                      }
+                                                                  ]
+                                                   },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgresTool",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       736,
+                                       1360
+                                   ],
+                      "id":  "e55a30dc-c505-4f73-b76d-e42e5a6b4910",
+                      "name":  "Consultar Clientes - PostgreSQL"
+                  },
+                  {
+                      "parameters":  {
+                                         "descriptionType":  "manual",
+                                         "toolDescription":  "Cria chamados de atendimento no PostgreSQL para reclama????es, problemas t??cnicos e solicita????es que necessitem de acompanhamento humano. Utilize esta ferramenta somente quando for necess??rio abrir um chamado, evitando registros duplicados. Registre o motivo, a descri????o e as informa????es necess??rias do cliente. Confirme a cria????o somente ap??s receber o resultado da ferramenta.",
+                                         "schema":  {
+                                                        "__rl":  true,
+                                                        "value":  "public",
+                                                        "mode":  "list",
+                                                        "cachedResultName":  "public"
+                                                    },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "tickets",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "tickets"
+                                                   },
+                                         "columns":  {
+                                                         "mappingMode":  "defineBelow",
+                                                         "value":  {
+                                                                       "assunto":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027assunto\u0027, ``, \u0027string\u0027) }}",
+                                                                       "descricao":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027descricao\u0027, ``, \u0027string\u0027) }}",
+                                                                       "cliente_id":  "={{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.id }}"
+                                                                   },
+                                                         "matchingColumns":  [
+                                                                                 "id"
+                                                                             ],
+                                                         "schema":  [
+                                                                        {
+                                                                            "id":  "id",
+                                                                            "displayName":  "id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  true,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "cliente_id",
+                                                                            "displayName":  "cliente_id",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "conversa_id",
+                                                                            "displayName":  "conversa_id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "assunto",
+                                                                            "displayName":  "assunto",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "descricao",
+                                                                            "displayName":  "descricao",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "prioridade",
+                                                                            "displayName":  "prioridade",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "status",
+                                                                            "displayName":  "status",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "criado_em",
+                                                                            "displayName":  "criado_em",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "dateTime",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "encerrado_em",
+                                                                            "displayName":  "encerrado_em",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "dateTime",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        }
+                                                                    ],
+                                                         "attemptToConvertTypes":  false,
+                                                         "convertFieldsToString":  false
+                                                     },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgresTool",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       896,
+                                       1360
+                                   ],
+                      "id":  "78244112-9e5e-4863-9981-cfe8600df33d",
+                      "name":  "Gerenciar Tickets - PostgreSQL"
+                  },
+                  {
+                      "parameters":  {
+                                         "rules":  {
+                                                       "values":  [
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 },
+                                                                                                                    "leftValue":  "={{ $json.intencao }}",
+                                                                                                                    "rightValue":  "agendamento",
+                                                                                                                    "id":  "d718558d-c410-4312-8ebf-2f3e38ccc717"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         }
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 },
+                                                                                                                    "leftValue":  "={{ $json.intencao }}",
+                                                                                                                    "rightValue":  "captacao_lead",
+                                                                                                                    "id":  "41c3cb53-c5a9-44bb-a3bb-ed8a53b829c0"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         }
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 },
+                                                                                                                    "leftValue":  "={{ $json.intencao }}",
+                                                                                                                    "rightValue":  "solicitacao_documento",
+                                                                                                                    "id":  "dddb6975-6306-47c9-b473-90bb6b5f19e5"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         }
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 },
+                                                                                                                    "leftValue":  "={{ $json.intencao }}",
+                                                                                                                    "rightValue":  "atendimento_humano",
+                                                                                                                    "id":  "5ce5d2bc-77a4-4183-9471-3818c3bc8a2c"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         }
+                                                                      },
+                                                                      {
+                                                                          "conditions":  {
+                                                                                             "options":  {
+                                                                                                             "caseSensitive":  true,
+                                                                                                             "leftValue":  "",
+                                                                                                             "typeValidation":  "strict",
+                                                                                                             "version":  3
+                                                                                                         },
+                                                                                             "conditions":  [
+                                                                                                                {
+                                                                                                                    "operator":  {
+                                                                                                                                     "type":  "string",
+                                                                                                                                     "operation":  "equals"
+                                                                                                                                 },
+                                                                                                                    "leftValue":  "={{ $json.intencao }}",
+                                                                                                                    "rightValue":  "informacao",
+                                                                                                                    "id":  "4c3120ab-80d4-4208-914f-b7c2d9046994"
+                                                                                                                }
+                                                                                                            ],
+                                                                                             "combinator":  "and"
+                                                                                         }
+                                                                      }
+                                                                  ]
+                                                   },
+                                         "options":  {
+                                                         "fallbackOutput":  "extra",
+                                                         "renameFallbackOutput":  "FAQ / Small Talk"
+                                                     }
+                                     },
+                      "id":  "1b155b96-2b16-4c4b-9164-39011528183a",
+                      "name":  "09-Direcionar por Inten????o",
+                      "type":  "n8n-nodes-base.switch",
+                      "position":  [
+                                       1552,
+                                       976
+                                   ],
+                      "typeVersion":  3.4
+                  },
+                  {
+                      "parameters":  {
+                                         "select":  "channel",
+                                         "channelId":  {
+                                                           "__rl":  true,
+                                                           "value":  "#suporte",
+                                                           "mode":  "name"
+                                                       },
+                                         "text":  "=???? TESTE N8N - SLACK\n\nIntegra????o entre n8n e Slack funcionando.\n\nOrigem: Chatbot WhatsApp\nStatus: Teste de comunica????o",
+                                         "otherOptions":  {
+
+                                                          }
+                                     },
+                      "id":  "6b20e524-c90d-41b1-ad61-8915a74dc563",
+                      "name":  "Encaminhar Atendimento - Slack",
+                      "type":  "n8n-nodes-base.slack",
+                      "position":  [
+                                       2016,
+                                       1360
+                                   ],
+                      "webhookId":  "CONFIGURE_WEBHOOK_ID",
+                      "typeVersion":  2.5
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "deb6085c-bbd1-42a0-854f-ad1a99769db6",
+                                                                                     "name":  "=response",
+                                                                                     "value":  "={{ $(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "id":  "b9f11439-11aa-411b-8cc7-e2d9caea9c94",
+                      "name":  "Responder Perguntas Frequentes",
+                      "type":  "n8n-nodes-base.set",
+                      "position":  [
+                                       2016,
+                                       1552
+                                   ],
+                      "typeVersion":  3.4
+                  },
+                  {
+                      "parameters":  {
+                                         "calendar":  {
+                                                          "__rl":  true,
+                                                          "value":  "CONFIGURE_CALENDAR_ID",
+                                                          "mode":  "id"
+                                                      },
+                                         "start":  "={{ $json.start }}",
+                                         "end":  "={{ $json.end }}",
+                                         "additionalFields":  {
+
+                                                              }
+                                     },
+                      "id":  "b31513a0-3e8c-4601-aa16-2f552bba9968",
+                      "name":  "Criar Agendamento - Google Calendar1",
+                      "type":  "n8n-nodes-base.googleCalendar",
+                      "position":  [
+                                       2000,
+                                       592
+                                   ],
+                      "typeVersion":  1.3
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "download",
+                                         "fileId":  {
+                                                        "__rl":  true,
+                                                        "value":  "CONFIGURE_DOCUMENT_FILE_ID",
+                                                        "mode":  "id"
+                                                    },
+                                         "options":  {
+                                                         "binaryPropertyName":  "document"
+                                                     }
+                                     },
+                      "id":  "4d82c3ab-8d89-468e-ae84-667434e291b1",
+                      "name":  "Enviar Documento - Google Drive",
+                      "type":  "n8n-nodes-base.googleDrive",
+                      "position":  [
+                                       2016,
+                                       976
+                                   ],
+                      "typeVersion":  3
+                  },
+                  {
+                      "parameters":  {
+                                         "schema":  {
+                                                        "__rl":  true,
+                                                        "mode":  "list",
+                                                        "value":  "public"
+                                                    },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "metricas_atendimento",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "metricas_atendimento"
+                                                   },
+                                         "columns":  {
+                                                         "mappingMode":  "defineBelow",
+                                                         "value":  {
+                                                                       "cliente_id":  "={{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.id }}",
+                                                                       "intencao":  "={{ JSON.parse($(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output).intent }}",
+                                                                       "sentimento":  "={{ $(\u002706-Analisar Sentimento e Idioma\u0027).first().json.sentimentAnalysis.category }}",
+                                                                       "requer_humano":  "={{ JSON.parse($(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output).requires_human }}"
+                                                                   },
+                                                         "matchingColumns":  [
+                                                                                 "id"
+                                                                             ],
+                                                         "schema":  [
+                                                                        {
+                                                                            "id":  "id",
+                                                                            "displayName":  "id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  true,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "cliente_id",
+                                                                            "displayName":  "cliente_id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "intencao",
+                                                                            "displayName":  "intencao",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "sentimento",
+                                                                            "displayName":  "sentimento",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "requer_humano",
+                                                                            "displayName":  "requer_humano",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "boolean",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  false
+                                                                        },
+                                                                        {
+                                                                            "id":  "criado_em",
+                                                                            "displayName":  "criado_em",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "dateTime",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        }
+                                                                    ],
+                                                         "attemptToConvertTypes":  false,
+                                                         "convertFieldsToString":  false
+                                                     },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       1376,
+                                       1072
+                                   ],
+                      "id":  "d7d3be57-b350-4c96-9ce5-4d2600ee6196",
+                      "name":  "08-Registrar M??tricas"
+                  },
+                  {
+                      "parameters":  {
+                                         "sendTo":  "={{ $json.metadata.email }}",
+                                         "subject":  "Your Requested Document",
+                                         "message":  "={{ $json.response }}",
+                                         "options":  {
+                                                         "attachmentsUi":  {
+                                                                               "attachmentsBinary":  [
+                                                                                                         {
+                                                                                                             "property":  "document"
+                                                                                                         }
+                                                                                                     ]
+                                                                           }
+                                                     }
+                                     },
+                      "id":  "24782cb0-beba-462c-b924-606fa5c18f33",
+                      "name":  "Enviar Documento - Gmail",
+                      "type":  "n8n-nodes-base.gmail",
+                      "position":  [
+                                       1792,
+                                       976
+                                   ],
+                      "webhookId":  "CONFIGURE_WEBHOOK_ID",
+                      "typeVersion":  2.2
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "select",
+                                         "schema":  {
+                                                        "__rl":  true,
+                                                        "mode":  "list",
+                                                        "value":  "public"
+                                                    },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "clientes",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "clientes"
+                                                   },
+                                         "limit":  1,
+                                         "where":  {
+                                                       "values":  [
+                                                                      {
+                                                                          "column":  "telefone",
+                                                                          "value":  "={{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.telefone }}"
+                                                                      }
+                                                                  ]
+                                                   },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       2000,
+                                       800
+                                   ],
+                      "id":  "7482392a-2518-44e1-8d30-82a93978f8fc",
+                      "name":  "Gerenciar Contatos - PostgreSQL"
+                  },
+                  {
+                      "parameters":  {
+                                         "schema":  {
+                                                        "__rl":  true,
+                                                        "mode":  "list",
+                                                        "value":  "public"
+                                                    },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "tickets",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "tickets"
+                                                   },
+                                         "columns":  {
+                                                         "mappingMode":  "defineBelow",
+                                                         "value":  {
+                                                                       "assunto":  "Atendimento humano - WhatsApp",
+                                                                       "cliente_id":  "={{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.id }}",
+                                                                       "descricao":  "={{ \u0027Mensagem do cliente: \u0027 + $(\u002704-Unifica os tipos de mensagens\u0027).first().json.Mensagem + \u0027\\nResposta da IA: \u0027 + $(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output }}",
+                                                                       "prioridade":  "normal",
+                                                                       "status":  "aberto"
+                                                                   },
+                                                         "matchingColumns":  [
+                                                                                 "id"
+                                                                             ],
+                                                         "schema":  [
+                                                                        {
+                                                                            "id":  "id",
+                                                                            "displayName":  "id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  true,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "cliente_id",
+                                                                            "displayName":  "cliente_id",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "conversa_id",
+                                                                            "displayName":  "conversa_id",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "number",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "assunto",
+                                                                            "displayName":  "assunto",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "descricao",
+                                                                            "displayName":  "descricao",
+                                                                            "required":  true,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "prioridade",
+                                                                            "displayName":  "prioridade",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "status",
+                                                                            "displayName":  "status",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "string",
+                                                                            "canBeUsedToMatch":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "criado_em",
+                                                                            "displayName":  "criado_em",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "dateTime",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        },
+                                                                        {
+                                                                            "id":  "encerrado_em",
+                                                                            "displayName":  "encerrado_em",
+                                                                            "required":  false,
+                                                                            "defaultMatch":  false,
+                                                                            "display":  true,
+                                                                            "type":  "dateTime",
+                                                                            "canBeUsedToMatch":  true,
+                                                                            "removed":  true
+                                                                        }
+                                                                    ],
+                                                         "attemptToConvertTypes":  false,
+                                                         "convertFieldsToString":  false
+                                                     },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.postgres",
+                      "typeVersion":  2.7,
+                      "position":  [
+                                       2000,
+                                       1152
+                                   ],
+                      "id":  "d5ce3fb4-5da6-487f-a501-adc2266e1131",
+                      "name":  "Criar Ticket - PostgreSQL"
+                  },
+                  {
+                      "parameters":  {
+                                         "select":  "channel",
+                                         "channelId":  {
+                                                           "__rl":  true,
+                                                           "value":  "#suporte",
+                                                           "mode":  "name"
+                                                       },
+                                         "text":  "=???? Novo atendimento para a equipe de suporte\n\nCliente: {{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.nome }}\n\nTelefone: {{ $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.telefone }}\n\nMensagem: {{ $(\u002704-Unifica os tipos de mensagens\u0027).first().json.Mensagem }}\n\nSentimento: {{ $(\u002706-Analisar Sentimento e Idioma\u0027).first().json.sentimentAnalysis.category }}\n\nResposta da IA: {{ $(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output }}",
+                                         "otherOptions":  {
+
+                                                          }
+                                     },
+                      "id":  "421bb417-cf39-413c-946f-faa7316cca13",
+                      "name":  "Encaminhamento Humano - Slack",
+                      "type":  "n8n-nodes-base.slack",
+                      "position":  [
+                                       1808,
+                                       1152
+                                   ],
+                      "webhookId":  "CONFIGURE_WEBHOOK_ID",
+                      "typeVersion":  2.5
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "\nconst saida = $(\u002707 ??? Agente de Atendimento WhatsApp\u0027).first().json.output;\n\nconst dados = typeof saida === \u0027string\u0027\n  ? JSON.parse(saida.replace(/^```(?:json)?\\s*|\\s*```$/g, \u0027\u0027).trim())\n  : saida;\n\nconst telefone = String(\n  $(\u002705-Cadastrar Cliente no PostgreSQL\u0027).first().json.telefone\n);\n\nreturn {\n  json: {\n    telefone,\n    response: dados.response,\n    intent: dados.intent,\n    sentiment: dados.sentiment,\n    requires_human: dados.requires_human\n  }\n};\n\n\n\n"
+                                     },
+                      "id":  "30437b4b-87c5-4df9-861b-94cde7672613",
+                      "name":  "10-Formatar Resposta WhatsApp",
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       2464,
+                                       1168
+                                   ],
+                      "typeVersion":  2
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://evolution.example.invalid/send/text",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "httpHeaderAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "number",
+                                                                                       "value":  "={{ $json.telefone }}"
+                                                                                   },
+                                                                                   {
+                                                                                       "name":  "text",
+                                                                                       "value":  "={{ $json.response }}"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.5,
+                      "position":  [
+                                       2688,
+                                       1168
+                                   ],
+                      "id":  "6f95e867-fa4a-4e49-bd55-265e8df44210",
+                      "name":  "11-Enviar Mensagem - Evolution Go"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "4e3ac3a1-778d-476f-8937-244f89ad7f6a",
+                                                                                   "leftValue":  "={{ String($json.telefone ?? \u0027\u0027).replace(/\\D/g, \u0027\u0027) }}",
+                                                                                   "rightValue":  "CONFIGURE_ALLOWED_PHONE",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       -2528,
+                                       1200
+                                   ],
+                      "id":  "74d98dee-8ff9-4c54-b560-38014b692e8a",
+                      "name":  "If"
+                  },
+                  {
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.noOp",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -2512,
+                                       1376
+                                   ],
+                      "id":  "eb9064cc-c003-4830-a999-836c9d75539f",
+                      "name":  "No Operation, do nothing"
+                  },
+                  {
+                      "parameters":  {
+                                         "authentication":  "appToken",
+                                         "email":  "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI(\u0027Email\u0027, ``, \u0027string\u0027) }}",
+                                         "additionalFields":  {
+                                                                  "firstName":  "={{ $json.nome }}",
+                                                                  "leadStatus":  "NEW",
+                                                                  "phoneNumber":  "={{ $json.telefone }}"
+                                                              },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.hubspotTool",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       1072,
+                                       1360
+                                   ],
+                      "id":  "36aaede7-9fde-49e4-968a-37b7c0e1c58b",
+                      "name":  "Create or update a contact",
+                      "notes":  "Ferramenta HubSpot CRM respons??vel por criar ou atualizar\ncontatos comerciais e leads originados do WhatsApp.\n\nUtilize apenas quando for necess??rio cadastrar ou atualizar\num contato comercial no HubSpot.\n\nUse somente informa????es reais fornecidas pelo cliente.\nNunca invente nome, telefone ou e-mail.\n\nAntes de atualizar um contato, verifique sua identidade\ne evite duplicidades.\n\nEsta ferramenta n??o gerencia tickets, hist??rico de\natendimento ou cadastros operacionais do PostgreSQL."
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://langfuse.example.invalid/api/public/otel/v1/traces",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "httpBasicAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Content-Type",
+                                                                                         "value":  "application/json"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "x-langfuse-ingestion-version",
+                                                                                         "value":  "4"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={{ $json.otlp }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.5,
+                      "position":  [
+                                       928,
+                                       960
+                                   ],
+                      "id":  "2e1f60b6-7a45-4447-93b8-1aa45d632999",
+                      "name":  "Langfuse - Registrar Trace"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "\nconst hex = (length) =\u003e\n  Array.from(\n    { length },\n    () =\u003e Math.floor(Math.random() * 16).toString(16)\n  ).join(\u0027\u0027);\n\nconst inicio = Date.now();\nconst fim = Date.now();\n\nconst trace = {\n  resourceSpans: [{\n    resource: {\n      attributes: [{\n        key: \"service.name\",\n        value: {\n          stringValue: \"agente-atendimento-whatsapp\"\n        }\n      }]\n    },\n    scopeSpans: [{\n      scope: {\n        name: \"n8n-langfuse\"\n      },\n      spans: [{\n        traceId: hex(32),\n        spanId: hex(16),\n        name: \"agente-atendimento-checkpoint\",\n        kind: 1,\n        startTimeUnixNano: `${inicio}000000`,\n        endTimeUnixNano: `${Math.max(fim, inicio + 1)}000000`,\n        attributes: [{\n          key: \"langfuse.observation.type\",\n          value: {\n            stringValue: \"span\"\n          }\n        }]\n      }]\n    }]\n  }]\n};\n\nreturn [{\n  json: {\n    otlp: trace\n  }\n}];\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       672,
+                                       976
+                                   ],
+                      "id":  "72f03d5f-4f16-4b10-a6ad-cff682278471",
+                      "name":  "Langfuse - Preparar Trace",
+                      "onError":  "continueErrorOutput"
+                  },
+                  {
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.noOp",
+                      "typeVersion":  1,
+                      "position":  [
+                                       1168,
+                                       960
+                                   ],
+                      "id":  "71f66b8a-6a99-414e-92a9-771acc8a9686",
+                      "name":  "No Operation, do nothing1"
+                  }
+              ],
+    "connections":  {
+                        "Convert to File":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Transcrever whisper-api",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Transcrever whisper-api":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Transcri????o de ??udio1",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Convert to File2":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Descrever imagem usando: gemma3:4b",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Descrever imagem usando: gemma3:4b":  {
+                                                                   "main":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "Descri????o de Imagem1",
+                                                                                        "type":  "main",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                               },
+                        "Convert to File3":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Extract from File",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Extract from File":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Extra????o de PDF1",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "01-Recebe eventos do WhatsApp":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "02-Padroniza os dados",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                        "02-Padroniza os dados":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "If",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "03-Separa os tipos de mensagens":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Prepara o texto",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Transcri????o de ??udio",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Descri????o de Imagem",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Extra????o de PDF",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                        "Prepara o texto":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "04-Unifica os tipos de mensagens",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "04-Unifica os tipos de mensagens":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "05-Cadastrar Cliente no PostgreSQL",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             },
+                        "Transcri????o de ??udio":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Convert to File",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Transcri????o de ??udio1":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "04-Unifica os tipos de mensagens",
+                                                                           "type":  "main",
+                                                                           "index":  1
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Extra????o de PDF":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Convert to File3",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Extra????o de PDF1":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "04-Unifica os tipos de mensagens",
+                                                                      "type":  "main",
+                                                                      "index":  3
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Descri????o de Imagem":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Convert to File2",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                },
+                        "Descri????o de Imagem1":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "04-Unifica os tipos de mensagens",
+                                                                          "type":  "main",
+                                                                          "index":  2
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "05-Cadastrar Cliente no PostgreSQL":  {
+                                                                   "main":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "06-Analisar Sentimento e Idioma",
+                                                                                        "type":  "main",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                               },
+                        "06-Analisar Sentimento e Idioma":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ],
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                        "07 ??? Agente de Atendimento WhatsApp":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "08-Registrar M??tricas",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     },
+                                                                                     {
+                                                                                         "node":  "Langfuse - Preparar Trace",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                },
+                        "Modelo LLM - Ollama":  {
+                                                    "ai_languageModel":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "06-Analisar Sentimento e Idioma",
+                                                                                     "type":  "ai_languageModel",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                },
+                        "Modelo LLM - Ollama1":  {
+                                                     "ai_languageModel":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                      "type":  "ai_languageModel",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                 },
+                        "Mem??ria de Conversas - PostgreSQL":  {
+                                                                  "ai_memory":  [
+                                                                                    [
+                                                                                        {
+                                                                                            "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                            "type":  "ai_memory",
+                                                                                            "index":  0
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                              },
+                        "Enviar E-mail - Gmail":  {
+                                                      "ai_tool":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                              "type":  "ai_tool",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                  },
+                        "Gerenciar Agendamentos - Google Calendar":  {
+                                                                         "ai_tool":  [
+                                                                                         [
+                                                                                             {
+                                                                                                 "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                                 "type":  "ai_tool",
+                                                                                                 "index":  0
+                                                                                             }
+                                                                                         ]
+                                                                                     ]
+                                                                     },
+                        "Base de Conhecimento - PGVector":  {
+                                                                "ai_tool":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                        "type":  "ai_tool",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                            },
+                        "Embeddings - Ollama":  {
+                                                    "ai_embedding":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Base de Conhecimento - PGVector",
+                                                                                 "type":  "ai_embedding",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                },
+                        "Consultar Clientes - PostgreSQL":  {
+                                                                "ai_tool":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                        "type":  "ai_tool",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                            },
+                        "Gerenciar Tickets - PostgreSQL":  {
+                                                               "ai_tool":  [
+                                                                               [
+                                                                                   {
+                                                                                       "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                       "type":  "ai_tool",
+                                                                                       "index":  0
+                                                                                   }
+                                                                               ]
+                                                                           ]
+                                                           },
+                        "09-Direcionar por Inten????o":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "node":  "Criar Agendamento - Google Calendar1",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "node":  "Gerenciar Contatos - PostgreSQL",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "node":  "Enviar Documento - Gmail",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "node":  "Encaminhamento Humano - Slack",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "node":  "Encaminhar Atendimento - Slack",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "node":  "Responder Perguntas Frequentes",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "Encaminhar Atendimento - Slack":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "10-Formatar Resposta WhatsApp",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "Responder Perguntas Frequentes":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "10-Formatar Resposta WhatsApp",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "Criar Agendamento - Google Calendar1":  {
+                                                                     "main":  [
+                                                                                  [
+                                                                                      {
+                                                                                          "node":  "10-Formatar Resposta WhatsApp",
+                                                                                          "type":  "main",
+                                                                                          "index":  0
+                                                                                      }
+                                                                                  ]
+                                                                              ]
+                                                                 },
+                        "Enviar Documento - Google Drive":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "10-Formatar Resposta WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                        "08-Registrar M??tricas":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "09-Direcionar por Inten????o",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Enviar Documento - Gmail":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Enviar Documento - Google Drive",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Gerenciar Contatos - PostgreSQL":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "10-Formatar Resposta WhatsApp",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            },
+                        "Encaminhamento Humano - Slack":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Criar Ticket - PostgreSQL",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                        "Criar Ticket - PostgreSQL":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "10-Formatar Resposta WhatsApp",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "10-Formatar Resposta WhatsApp":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "11-Enviar Mensagem - Evolution Go",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                        "If":  {
+                                   "main":  [
+                                                [
+                                                    {
+                                                        "node":  "03-Separa os tipos de mensagens",
+                                                        "type":  "main",
+                                                        "index":  0
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "node":  "No Operation, do nothing",
+                                                        "type":  "main",
+                                                        "index":  0
+                                                    }
+                                                ]
+                                            ]
+                               },
+                        "Create or update a contact":  {
+                                                           "ai_tool":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "07 ??? Agente de Atendimento WhatsApp",
+                                                                                   "type":  "ai_tool",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                       },
+                        "Langfuse - Registrar Trace":  {
+                                                           "main":  [
+                                                                        [
+                                                                            {
+                                                                                "node":  "No Operation, do nothing1",
+                                                                                "type":  "main",
+                                                                                "index":  0
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                       },
+                        "Langfuse - Preparar Trace":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "Langfuse - Registrar Trace",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "versionId":  "d0071fff-b18a-47a5-8191-43bbf088ce37",
+    "nodeGroups":  [
+
+                   ],
+    "id":  "CsbpwJ3ivRSRlEQp",
+    "tags":  [
+
+             ]
+}

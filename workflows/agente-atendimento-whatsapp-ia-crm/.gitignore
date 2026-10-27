@@ -6,3 +6,7 @@ backups/
 credentials*.json
 *.log
 *.bak
+
+# Somente o export sanitizado pode ser publicado nesta pasta.
+/*.json
+!/agente-atendimento-whatsapp-ia-crm.json

@@ -60,8 +60,8 @@ A detecção de idioma não possui uma configuração dedicada no export, apesar
 
 ## Configuração básica
 
-1. Importe o JSON desta pasta em uma instância n8n compatível com os tipos e versões de nós do export. Mantenha o workflow desativado até concluir a configuração e a homologação. A versão exata da instância de origem não está registrada.
-2. Cadastre e vincule no gerenciador de credenciais do n8n: PostgreSQL, Ollama, HubSpot App Token, Gmail OAuth2, Google Calendar OAuth2, Google Drive OAuth2, Slack, Langfuse HTTP Basic Auth e Evolution Go Header Auth. As referências às credenciais locais foram removidas do export.
+1. Importe `agente-atendimento-whatsapp-ia-crm.json` desta pasta em uma instância n8n compatível com os tipos e versões de nós do export. Mantenha o workflow desativado até concluir a configuração e a homologação. A versão exata da instância de origem não está registrada.
+2. Cadastre e vincule no gerenciador de credenciais do n8n: PostgreSQL, Ollama, HubSpot App Token, Gmail OAuth2, Google Calendar OAuth2, Google Drive OAuth2, Slack, Langfuse HTTP Basic Auth e Evolution Go Header Auth. As referências às credenciais locais foram removidas do export. Após importar, selecione as credenciais em cada nó correspondente; os blocos `credentials` não estão incluídos. Nos HTTP Requests da Evolution Go e do Langfuse, vincule respectivamente Header Auth e Basic Auth.
 3. Na Evolution Go, configure o nome e o valor do cabeçalho de autenticação conforme a sua instalação na credencial **Header Auth**. O export não presume o nome desse cabeçalho. O `Content-Type` foi corrigido para `application/json`; nenhum token deve ser colocado nele.
 4. Substitua os endpoints `https://*.example.invalid` pelos serviços de transcrição, Ollama, Evolution Go e Langfuse. Esses endereços são deliberadamente inválidos. Configure o endpoint do Ollama também na credencial correspondente. Use transporte protegido ou uma rede privada com proteção equivalente.
 5. Configure `CONFIGURE_WHATSAPP_WEBHOOK_PATH`, os identificadores `CONFIGURE_WEBHOOK_ID` dos nós que os possuem, `CONFIGURE_ALLOWED_PHONE`, `CONFIGURE_CALENDAR_ID` e `CONFIGURE_DOCUMENT_FILE_ID`. Preserve o filtro de telefone até decidir explicitamente como operar o atendimento.
@@ -84,10 +84,10 @@ As seguintes questões foram identificadas por leitura estática e **não foram 
 
 ## Segurança e publicação
 
-- `pinData`, tokens, dados de conversas, referências locais de credenciais e metadados da instância foram removidos.
+- `pinData`, tokens, dados de conversas, todos os blocos `credentials` (IDs e nomes locais) e `meta.instanceId` foram removidos do export publicável.
 - E-mails de calendário, telefone de teste, IDs privados, caminho do webhook e endpoints foram substituídos por placeholders.
 - Os 53 nós e suas conexões foram preservados. As únicas mudanças de configuração funcional são a correção do `Content-Type` e a autenticação configurável da Evolution Go; as demais mudanças sanitizam valores ou documentação.
-- O original operacional está em `backups/workflow-operacional-original.json`, ignorado pelo Git. Ele contém dados sensíveis: não publique, não compartilhe nem use `git add -f` nessa pasta. O backup preserva o conteúdo original, inclusive sua configuração anterior do cabeçalho.
+- O original operacional está em `backups/workflow-operacional-original.json`, ignorado pelo Git. A cópia operacional que estava na raiz foi preservada integralmente em `backups/workflow-operacional-preservado-2026-10-27.json`, também ignorada. Ele contém dados sensíveis: não publique, não compartilhe nem use `git add -f` nessa pasta. O backup preserva o conteúdo original, inclusive sua configuração anterior do cabeçalho.
 - Rotacione o **token de instância da Evolution Go** encontrado no original, inclusive nas integrações que o utilizam. O `messageSecret` foi removido junto ao evento; ele é material criptográfico de mensagem, não uma API key a substituir no n8n. Não há evidência no export de exposição dos valores das credenciais externas HubSpot, Langfuse, PostgreSQL, Google, Slack ou Ollama; se esses valores tiverem sido compartilhados por outro meio, revogue-os também.
 - O `.gitignore` não sanitiza JSONs nem remove versões já adicionadas ao índice. Antes de qualquer commit, confira que a versão em staging é a sanitizada e que o backup está ignorado.
 
