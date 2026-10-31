@@ -1,0 +1,10 @@
+FROM python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+RUN groupadd --gid 10001 tokenproxy && useradd --uid 10001 --gid tokenproxy --no-create-home tokenproxy && mkdir /data && chown tokenproxy:tokenproxy /data
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY main.py .
+USER 10001:10001
+EXPOSE 8003
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003", "--workers", "1", "--no-access-log"]

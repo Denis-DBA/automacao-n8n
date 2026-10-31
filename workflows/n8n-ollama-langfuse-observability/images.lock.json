@@ -1,0 +1,38 @@
+{
+  "ollama": {
+    "image": "ollama/ollama:0.40.13@sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429",
+    "tested_platform": "linux/amd64"
+  },
+  "n8n": {
+    "image": "n8nio/n8n:2.41.7@sha256:bcef56dd44014e09774219536a3f8cb07f1b553fcba94044bd9fc0f21f8676a3",
+    "tested_platform": "linux/amd64"
+  },
+  "postgres": {
+    "image": "postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3",
+    "tested_platform": "linux/amd64"
+  },
+  "redis": {
+    "image": "redis:7@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85",
+    "tested_platform": "linux/amd64"
+  },
+  "clickhouse": {
+    "image": "clickhouse/clickhouse-server:26.3.62.3@sha256:de3e47c64078aa196dae2349e048fc98ba81947f651f5c20e06e46baea8ae40a",
+    "tested_platform": "linux/amd64"
+  },
+  "minio": {
+    "image": "cgr.dev/chainguard/minio:latest@sha256:3b6e40c30ecd5cea627e382ff0b82ca841f58c52294578787043ee80c8ef7c82",
+    "tested_platform": "linux/amd64"
+  },
+  "langfuse-worker": {
+    "image": "docker.langfuse.com/langfuse/langfuse-worker:4@sha256:246a3a0fab57810734080d302492aa99d7ed0b6acc909c84b58832074b564175",
+    "tested_platform": "linux/amd64"
+  },
+  "langfuse-web": {
+    "image": "docker.langfuse.com/langfuse/langfuse:4@sha256:48ecae32cd74d3a567588602c144de0ec626daf32dc5f2e831a03cebd0bb2d34",
+    "tested_platform": "linux/amd64"
+  },
+  "proxy_base": {
+    "image": "python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159",
+    "tested_platform": "linux/amd64"
+  }
+}

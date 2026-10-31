@@ -1,0 +1,80 @@
+{
+  "content_opt_in": {
+    "result": "passed",
+    "synthetic": true,
+    "chat_requests": 3,
+    "sessions": 2,
+    "traces": 3,
+    "generation_observations": 6,
+    "scores": 3,
+    "monitor_observations": 3,
+    "real_tokens": {
+      "input": 866,
+      "output": 882,
+      "total": 1748
+    },
+    "capture_content": true,
+    "model": "qwen3:0.6b",
+    "checks": [
+      "chat_reply_only",
+      "concurrent_sessions",
+      "stable_session",
+      "unique_traces",
+      "unique_requests",
+      "proxy_langfuse_usage_equal",
+      "model",
+      "latency",
+      "score_and_comment",
+      "subworkflow_api_snapshot",
+      "metrics_usage_by_model",
+      "content_policy"
+    ]
+  },
+  "privacy_default": {
+    "result": "passed",
+    "synthetic": true,
+    "chat_requests": 3,
+    "sessions": 2,
+    "traces": 3,
+    "generation_observations": 6,
+    "scores": 3,
+    "monitor_observations": 3,
+    "real_tokens": {
+      "input": 859,
+      "output": 868,
+      "total": 1727
+    },
+    "capture_content": false,
+    "model": "qwen3:0.6b",
+    "checks": [
+      "chat_reply_only",
+      "concurrent_sessions",
+      "stable_session",
+      "unique_traces",
+      "unique_requests",
+      "proxy_langfuse_usage_equal",
+      "model",
+      "latency",
+      "score_and_comment",
+      "subworkflow_api_snapshot",
+      "metrics_usage_by_model",
+      "content_policy"
+    ]
+  },
+  "proxy_live": {
+    "result": "passed",
+    "checks": [
+      "health",
+      "inference_auth",
+      "query_auth",
+      "admin_routes_blocked",
+      "correlation_validation",
+      "sse_actual_usage",
+      "ndjson_actual_usage",
+      "cancelled_stream_unavailable_not_zero",
+      "upstream_error_unavailable_not_zero"
+    ],
+    "model": "qwen3:0.6b",
+    "synthetic": true
+  }
+}

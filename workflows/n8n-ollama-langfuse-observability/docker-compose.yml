@@ -1,0 +1,372 @@
+{
+  "name": "${COMPOSE_PROJECT_NAME:-n8n-ollama-observability}",
+  "services": {
+    "token-proxy": {
+      "image": "${COMPOSE_PROJECT_NAME:-n8n-ollama-observability}-proxy:local",
+      "restart": "unless-stopped",
+      "build": {
+        "context": "./proxy"
+      },
+      "ports": [
+        "127.0.0.1:${PROXY_PORT:-18003}:8003"
+      ],
+      "environment": {
+        "OLLAMA_URL": "${OLLAMA_URL:-http://host.docker.internal:11434}",
+        "PROXY_API_KEY": "${PROXY_API_KEY:?Run setup}",
+        "TOKEN_QUERY_API_KEY": "${TOKEN_QUERY_API_KEY:?Run setup}",
+        "TOKEN_RETENTION_DAYS": "${TOKEN_RETENTION_DAYS:-7}",
+        "TOKEN_MAX_STORAGE_BYTES": "${TOKEN_MAX_STORAGE_BYTES:-67108864}",
+        "MAX_BODY_BYTES": "${MAX_BODY_BYTES:-1048576}",
+        "MAX_LINE_BYTES": "${MAX_LINE_BYTES:-4194304}",
+        "MAX_CONCURRENT": "${MAX_CONCURRENT:-4}",
+        "REQUEST_TIMEOUT_SECONDS": "${REQUEST_TIMEOUT_SECONDS:-180}",
+        "TOKEN_DATA_DIR": "/data"
+      },
+      "volumes": [
+        "token_data:/data"
+      ],
+      "extra_hosts": [
+        "host.docker.internal:host-gateway"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8003/health',timeout=3)\""
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      },
+      "read_only": true,
+      "tmpfs": [
+        "/tmp"
+      ],
+      "cap_drop": [
+        "ALL"
+      ],
+      "security_opt": [
+        "no-new-privileges:true"
+      ],
+      "mem_limit": "512m",
+      "cpus": 1.0
+    },
+    "ollama": {
+      "image": "ollama/ollama:0.40.13@sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "volumes": [
+        "ollama_data:/root/.ollama"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "ollama list >/dev/null"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      },
+      "mem_limit": "12g"
+    },
+    "n8n": {
+      "image": "n8nio/n8n:2.41.7@sha256:bcef56dd44014e09774219536a3f8cb07f1b553fcba94044bd9fc0f21f8676a3",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "ports": [
+        "127.0.0.1:${N8N_PORT:-15678}:5678"
+      ],
+      "volumes": [
+        "n8n_data:/home/node/.n8n"
+      ],
+      "environment": {
+        "N8N_ENCRYPTION_KEY": "${N8N_ENCRYPTION_KEY:?Run setup}",
+        "N8N_DIAGNOSTICS_ENABLED": "false",
+        "N8N_PERSONALIZATION_ENABLED": "false",
+        "N8N_SECURE_COOKIE": "false",
+        "N8N_EDITOR_BASE_URL": "http://localhost:${N8N_PORT:-15678}",
+        "WEBHOOK_URL": "http://localhost:${N8N_PORT:-15678}",
+        "N8N_BLOCK_ENV_ACCESS_IN_NODE": "true",
+        "NODE_FUNCTION_ALLOW_BUILTIN": "crypto",
+        "EXECUTIONS_DATA_SAVE_ON_SUCCESS": "none",
+        "EXECUTIONS_DATA_SAVE_ON_ERROR": "none",
+        "EXECUTIONS_DATA_PRUNE": "true",
+        "EXECUTIONS_DATA_MAX_AGE": "24",
+        "GENERIC_TIMEZONE": "UTC"
+      },
+      "depends_on": {
+        "token-proxy": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:5678/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      }
+    },
+    "postgres": {
+      "image": "postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "environment": {
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD:?Run setup}",
+        "POSTGRES_DB": "langfuse"
+      },
+      "volumes": [
+        "postgres_data:/var/lib/postgresql/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d langfuse"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      }
+    },
+    "redis": {
+      "image": "redis:7@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "environment": {
+        "REDIS_AUTH": "${REDIS_AUTH:?Run setup}"
+      },
+      "command": [
+        "sh",
+        "-c",
+        "exec redis-server --requirepass \"$$REDIS_AUTH\" --maxmemory-policy noeviction"
+      ],
+      "volumes": [
+        "redis_data:/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "REDISCLI_AUTH=\"$$REDIS_AUTH\" redis-cli ping | grep PONG"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      }
+    },
+    "clickhouse": {
+      "image": "clickhouse/clickhouse-server:26.3.62.3@sha256:de3e47c64078aa196dae2349e048fc98ba81947f651f5c20e06e46baea8ae40a",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "user": "101:101",
+      "environment": {
+        "CLICKHOUSE_DB": "default",
+        "CLICKHOUSE_USER": "clickhouse",
+        "CLICKHOUSE_PASSWORD": "${CLICKHOUSE_PASSWORD:?Run setup}"
+      },
+      "volumes": [
+        "clickhouse_data:/var/lib/clickhouse",
+        "clickhouse_logs:/var/log/clickhouse-server"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8123/ping"
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      },
+      "ulimits": {
+        "nofile": {
+          "soft": 262144,
+          "hard": 262144
+        }
+      }
+    },
+    "minio": {
+      "image": "cgr.dev/chainguard/minio:latest@sha256:3b6e40c30ecd5cea627e382ff0b82ca841f58c52294578787043ee80c8ef7c82",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "entrypoint": "sh",
+      "command": [
+        "-c",
+        "mkdir -p /data/langfuse && minio server --address \":9000\" /data"
+      ],
+      "environment": {
+        "MINIO_ROOT_USER": "minio",
+        "MINIO_ROOT_PASSWORD": "${MINIO_ROOT_PASSWORD:?Run setup}"
+      },
+      "ports": [
+        "127.0.0.1:${S3_PORT:-19090}:9000"
+      ],
+      "volumes": [
+        "minio_data:/data"
+      ],
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "mc",
+          "ready",
+          "local"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 30
+      }
+    },
+    "langfuse-worker": {
+      "image": "docker.langfuse.com/langfuse/langfuse-worker:4@sha256:246a3a0fab57810734080d302492aa99d7ed0b6acc909c84b58832074b564175",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "environment": {
+        "DATABASE_URL": "postgresql://postgres:${POSTGRES_PASSWORD:?Run setup}@postgres:5432/langfuse",
+        "SALT": "${SALT:?Run setup}",
+        "ENCRYPTION_KEY": "${ENCRYPTION_KEY:?Run setup}",
+        "NEXTAUTH_URL": "http://localhost:${LANGFUSE_PORT:-13000}",
+        "CLICKHOUSE_MIGRATION_URL": "clickhouse://clickhouse:9000",
+        "CLICKHOUSE_URL": "http://clickhouse:8123",
+        "CLICKHOUSE_USER": "clickhouse",
+        "CLICKHOUSE_PASSWORD": "${CLICKHOUSE_PASSWORD:?Run setup}",
+        "CLICKHOUSE_CLUSTER_ENABLED": "false",
+        "REDIS_HOST": "redis",
+        "REDIS_PORT": "6379",
+        "REDIS_AUTH": "${REDIS_AUTH:?Run setup}",
+        "LANGFUSE_S3_EVENT_UPLOAD_BUCKET": "langfuse",
+        "LANGFUSE_S3_EVENT_UPLOAD_REGION": "auto",
+        "LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID": "minio",
+        "LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY": "${MINIO_ROOT_PASSWORD:?Run setup}",
+        "LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT": "http://minio:9000",
+        "LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE": "true",
+        "LANGFUSE_S3_EVENT_UPLOAD_PREFIX": "events/",
+        "LANGFUSE_S3_MEDIA_UPLOAD_BUCKET": "langfuse",
+        "LANGFUSE_S3_MEDIA_UPLOAD_REGION": "auto",
+        "LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID": "minio",
+        "LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY": "${MINIO_ROOT_PASSWORD:?Run setup}",
+        "LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT": "http://minio:9000",
+        "LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE": "true",
+        "LANGFUSE_S3_MEDIA_UPLOAD_PREFIX": "media/",
+        "TELEMETRY_ENABLED": "false"
+      },
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "redis": {
+          "condition": "service_healthy"
+        },
+        "minio": {
+          "condition": "service_healthy"
+        },
+        "clickhouse": {
+          "condition": "service_healthy"
+        }
+      }
+    },
+    "langfuse-web": {
+      "image": "docker.langfuse.com/langfuse/langfuse:4@sha256:48ecae32cd74d3a567588602c144de0ec626daf32dc5f2e831a03cebd0bb2d34",
+      "restart": "unless-stopped",
+      "profiles": [
+        "full"
+      ],
+      "ports": [
+        "127.0.0.1:${LANGFUSE_PORT:-13000}:3000"
+      ],
+      "depends_on": {
+        "postgres": {
+          "condition": "service_healthy"
+        },
+        "redis": {
+          "condition": "service_healthy"
+        },
+        "minio": {
+          "condition": "service_healthy"
+        },
+        "clickhouse": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": {
+        "DATABASE_URL": "postgresql://postgres:${POSTGRES_PASSWORD:?Run setup}@postgres:5432/langfuse",
+        "SALT": "${SALT:?Run setup}",
+        "ENCRYPTION_KEY": "${ENCRYPTION_KEY:?Run setup}",
+        "NEXTAUTH_URL": "http://localhost:${LANGFUSE_PORT:-13000}",
+        "CLICKHOUSE_MIGRATION_URL": "clickhouse://clickhouse:9000",
+        "CLICKHOUSE_URL": "http://clickhouse:8123",
+        "CLICKHOUSE_USER": "clickhouse",
+        "CLICKHOUSE_PASSWORD": "${CLICKHOUSE_PASSWORD:?Run setup}",
+        "CLICKHOUSE_CLUSTER_ENABLED": "false",
+        "REDIS_HOST": "redis",
+        "REDIS_PORT": "6379",
+        "REDIS_AUTH": "${REDIS_AUTH:?Run setup}",
+        "LANGFUSE_S3_EVENT_UPLOAD_BUCKET": "langfuse",
+        "LANGFUSE_S3_EVENT_UPLOAD_REGION": "auto",
+        "LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID": "minio",
+        "LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY": "${MINIO_ROOT_PASSWORD:?Run setup}",
+        "LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT": "http://minio:9000",
+        "LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE": "true",
+        "LANGFUSE_S3_EVENT_UPLOAD_PREFIX": "events/",
+        "LANGFUSE_S3_MEDIA_UPLOAD_BUCKET": "langfuse",
+        "LANGFUSE_S3_MEDIA_UPLOAD_REGION": "auto",
+        "LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID": "minio",
+        "LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY": "${MINIO_ROOT_PASSWORD:?Run setup}",
+        "LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT": "http://localhost:${S3_PORT:-19090}",
+        "LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE": "true",
+        "LANGFUSE_S3_MEDIA_UPLOAD_PREFIX": "media/",
+        "TELEMETRY_ENABLED": "false",
+        "NEXTAUTH_SECRET": "${NEXTAUTH_SECRET:?Run setup}",
+        "HOSTNAME": "0.0.0.0",
+        "LANGFUSE_S3_MEDIA_UPLOAD_INTERNAL_ENDPOINT": "http://minio:9000",
+        "LANGFUSE_INIT_ORG_ID": "${LANGFUSE_INIT_ORG_ID:-ollama-observability}",
+        "LANGFUSE_INIT_PROJECT_ID": "${LANGFUSE_INIT_PROJECT_ID:-ollama-observability}",
+        "LANGFUSE_INIT_PROJECT_NAME": "${LANGFUSE_INIT_PROJECT_NAME:-Ollama Observability}",
+        "LANGFUSE_INIT_PROJECT_PUBLIC_KEY": "${LANGFUSE_INIT_PROJECT_PUBLIC_KEY:?Run setup}",
+        "LANGFUSE_INIT_PROJECT_SECRET_KEY": "${LANGFUSE_INIT_PROJECT_SECRET_KEY:?Run setup}",
+        "LANGFUSE_INIT_USER_EMAIL": "${LANGFUSE_INIT_USER_EMAIL:-admin@example.invalid}",
+        "LANGFUSE_INIT_USER_PASSWORD": "${LANGFUSE_INIT_USER_PASSWORD:?Run setup}",
+        "LANGFUSE_INIT_PROJECT_RETENTION": "7"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/api/public/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""
+        ],
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 30,
+        "start_period": "30s"
+      }
+    }
+  },
+  "volumes": {
+    "token_data": {},
+    "ollama_data": {},
+    "n8n_data": {},
+    "postgres_data": {},
+    "redis_data": {},
+    "clickhouse_data": {},
+    "clickhouse_logs": {},
+    "minio_data": {}
+  }
+}

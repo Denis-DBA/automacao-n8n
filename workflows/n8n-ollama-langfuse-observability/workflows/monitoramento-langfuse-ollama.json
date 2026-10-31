@@ -1,0 +1,229 @@
+{
+  "name": "Monitoramento Langfuse - Ollama",
+  "nodes": [
+    {
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "typeVersion": 1.2,
+      "id": "f0f9674b-69d5-4bcd-89bb-15b97fde3b8d",
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Configurar Monitoramento",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "const d=$input.first().json;\nif(!/^[1-9]\\d*$/.test(String(d.execution_id)))throw new Error('Execution ID inválido');\nreturn [{json:{...d,n8n_url:'http://n8n:5678',latency_threshold_ms:30000,slack_channel:'CONFIGURE_CHANNEL'}}];"
+      },
+      "typeVersion": 2,
+      "id": "c840d4ef-dc64-4544-9108-f6a01aa8b167",
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "name": "Consultar Execução n8n",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Configurar Monitoramento').first().json.n8n_url + '/api/v1/executions/' + $('Configurar Monitoramento').first().json.execution_id + '?includeData=false' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "typeVersion": 4.5,
+      "id": "fcb6677b-3ec9-43e1-99f7-6f4f6580c51d",
+      "position": [
+        720,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "name": "Preparar Métricas Operacionais",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "const origin=$('Configurar Monitoramento').first().json;\nconst execution=$input.first().json;\nif(execution.error || String(execution.id)!==String(origin.execution_id)) throw new Error('API n8n não retornou a execução esperada');\nconst start=Date.parse(execution.startedAt),stop=Date.parse(execution.stoppedAt);\nconst complete=Number.isFinite(start)&&Number.isFinite(stop)&&stop>=start;\nconst latency=complete?stop-start:origin.duracao_ms;\nconst attrs=[['langfuse.observation.type','span'],['langfuse.session.id',origin.session_id],\n ['langfuse.trace.name','n8n-ollama-observability'],['langfuse.observation.metadata.execution_status',execution.status],\n ['langfuse.observation.metadata.execution_id',origin.execution_id],['langfuse.observation.metadata.latency_scope',complete?'workflow':'agent']]\n .map(([key,value])=>({key,value:{stringValue:String(value)}}));\nattrs.push({key:'langfuse.observation.metadata.latency_ms',value:{doubleValue:latency}});\nconst end=Date.now();\nconst span={traceId:origin.trace_id,spanId:require('crypto').randomBytes(8).toString('hex'),parentSpanId:origin.span_id,\n name:'Monitoramento n8n',kind:1,startTimeUnixNano:String(BigInt(end-Math.trunc(latency))*1000000n),\n endTimeUnixNano:String(BigInt(end)*1000000n),attributes:attrs};\nreturn [{json:{...origin,execution_status:execution.status,latency_ms:latency,\n alert:latency>origin.latency_threshold_ms,\n otlp:{resourceSpans:[{scopeSpans:[{scope:{name:'n8n-monitor'},spans:[span]}]}]}}}];"
+      },
+      "typeVersion": 2,
+      "id": "7ddbeea5-fd88-48bd-badf-314c0e474a27",
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "name": "Registrar Métricas Langfuse",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Preparar Métricas Operacionais').first().json.langfuse_url + '/api/public/otel/v1/traces' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.otlp }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-langfuse-ingestion-version",
+              "value": "4"
+            }
+          ]
+        }
+      },
+      "typeVersion": 4.5,
+      "id": "6124dfea-23d9-4ec9-a8f0-92ad835a4572",
+      "position": [
+        1200,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "name": "Latência alta?",
+      "type": "n8n-nodes-base.if",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "762eec6b-7058-46a9-b2e0-3eeab05c05be",
+              "leftValue": "={{ $('Preparar Métricas Operacionais').first().json.alert }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "typeVersion": 2.3,
+      "id": "3529f692-7c97-4719-9b85-153ed4814ffe",
+      "position": [
+        1440,
+        0
+      ]
+    },
+    {
+      "name": "Slack — Alerta Opcional",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {channel:$(\"Configurar Monitoramento\").first().json.slack_channel,text:\"Alerta de latência do laboratório de observabilidade. Execução: \" + $(\"Preparar Métricas Operacionais\").first().json.execution_id} }}"
+      },
+      "typeVersion": 4.5,
+      "id": "a34691a6-dbd5-4483-9373-94609edaea4d",
+      "position": [
+        1680,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "disabled": true,
+      "notes": "Opcional: configure credencial Header Auth Authorization: Bearer <token>, canal, permissão chat:write e habilite conscientemente."
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Configurar Monitoramento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configurar Monitoramento": {
+      "main": [
+        [
+          {
+            "node": "Consultar Execução n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Execução n8n": {
+      "main": [
+        [
+          {
+            "node": "Preparar Métricas Operacionais",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Métricas Operacionais": {
+      "main": [
+        [
+          {
+            "node": "Registrar Métricas Langfuse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Métricas Langfuse": {
+      "main": [
+        [
+          {
+            "node": "Latência alta?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Latência alta?": {
+      "main": [
+        [
+          {
+            "node": "Slack — Alerta Opcional",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": false,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 600
+  }
+}
