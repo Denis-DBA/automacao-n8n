@@ -30,3 +30,49 @@ Desktop.ini
 
 # Os JSONs de workflows permanecem disponíveis para publicação.
 # Revise segredos embutidos nos JSONs: o gitignore não os sanitiza.
+
+# Security audit: private environment, backups, runtime and Docker data
+.env
+.env.*
+*.env
+*.env.*
+!.env.example
+!*.env.example
+*.backup
+*.backup.*
+*.backup-*
+*.bak
+*.bak.*
+*.old
+*.orig
+*~
+backups/
+backup/
+logs/
+*.log
+*.log.*
+volumes/
+docker-volumes/
+docker-data/
+.docker-data/
+**/ollama_data/
+**/n8n_data/
+**/postgres_data/
+**/redis_data/
+tmp/
+temp/
+.tmp/
+.cache/
+*.tmp
+*.temp
+*.swp
+*.swo
+runtime/
+executions/
+execution-data/
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm

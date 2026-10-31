@@ -89,3 +89,9 @@ O `.gitignore` protege arquivos auxiliares locais, mas não remove informações
 
 - GitHub: [Denis-DBA](https://github.com/Denis-DBA)
 - LinkedIn: [Denis André Ramalho](https://www.linkedin.com/in/denis-andré-ramalho-8615b6158)
+
+## n8n Ollama Langfuse — Observability
+
+Laboratório independente de observabilidade de IA local, com proxy de tokens reais, workflows n8n e integração OTLP com Langfuse. Inclui instaladores e dois modos de implantação. A validação completa de instalação limpa permanece pendente; consulte o relatório antes de instalar.
+
+[Ver projeto e validação](workflows/n8n-ollama-langfuse-observability/)

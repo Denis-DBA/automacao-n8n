@@ -1,0 +1,6 @@
+-r ../proxy/requirements.txt
+pytest==9.2.0
+pytest-asyncio==1.4.1
+PyYAML==6.0.3
+detect-secrets==1.5.0
+pip-audit==2.10.1
