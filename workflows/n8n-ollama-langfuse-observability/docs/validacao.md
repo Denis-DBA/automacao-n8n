@@ -59,3 +59,11 @@ A auditoria cobre o código, workflows, Compose, instaladores, documentação e 
 - Navegação visual manual no dashboard: não executada; observações, sessões, scores, conteúdo e agregações foram confirmados pelas APIs v4 que alimentam a UI.
 
 A instalação e o fluxo foram reproduzidos na configuração descrita. A configuração inicial de credenciais n8n, conta proprietária e associação/publicação dos workflows continua manual. Portanto não se promete instalação universal sem configuração nem funcionamento idêntico em plataformas/modelos não testados. Não houve merge na main.
+
+## Fechamento para revisão
+
+A revisão de fechamento parte do commit `9bed67e` e reaproveita os 19 testes e os ensaios de integração registrados acima. Não houve nova implantação, inferência ou repetição da suíte, pois as alterações de fechamento são somente de documentação. O [roteiro de primeira execução](primeira-execucao.md) consolida setup, login, credenciais, publicação, aceite e retomada; também esclarece o comportamento de privacidade e a latência do monitor.
+
+Na inspeção do PR #13, não havia threads de revisão pendentes, conflitos ou execuções GitHub Actions associadas ao commit. Ausência de CI não significa CI aprovado: as evidências disponíveis são os testes locais documentados. Slack e plataformas/modelos não homologados permanecem limitações explícitas, não funcionalidades declaradas como testadas. As verificações adicionais de fechamento se limitam aos links/arquivos referenciados pela documentação, diff e detecção de segredos dos arquivos alterados.
+
+No fechamento, cinco arquivos Markdown foram conferidos: 20 links locais e seis artefatos de instalação referenciados existem. Uma consulta Docker somente de leitura confirmou que os 25 containers originais ainda correspondem ao baseline; nenhum serviço foi iniciado, alterado ou reiniciado nesta etapa.

@@ -33,7 +33,7 @@ Com Node.js 22+, execute `node scripts/validate-workflows.js`. Testes unitários
 5. No chat de teste, envie: **Explique em três frases o que é observabilidade de inteligência artificial.**
 6. Confira resposta, execução e credenciais sem copiar conteúdo privado para logs.
 7. No Langfuse, localize `n8n-ollama-observability`, sessão derivada, observação pai e gerações filhas. Confira modelo, input/output sintéticos, latência e uso real de cada geração.
-8. Confira `overall_quality` entre 0 e 1, justificativa, geração do avaliador e métricas do subworkflow. A latência do monitor informa se mede agente ou workflow completo.
+8. Confira `overall_quality` entre 0 e 1, justificativa quando a captura estiver habilitada, geração do avaliador e métricas do subworkflow. Na configuração padrão, o monitor registra um snapshot da execução ativa e latência com escopo agent, não a duração final do workflow.
 9. No Dashboard/Metrics, agrupe uso por modelo e compare com as gerações. O pai não deve duplicar contadores. Contadores ausentes precisam aparecer como indisponíveis, não zero.
 10. Teste duas sessões simultâneas: as correlações não podem compartilhar registros. Repetir a mensagem na mesma sessão mantém a sessão, mas cria execution/trace ID novos.
 

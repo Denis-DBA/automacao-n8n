@@ -4,6 +4,8 @@ Laboratório de observabilidade de IA local: conversa no n8n, inferência Ollama
 
 **Estado:** instalação completa e fluxo ponta a ponta validados em Windows com Docker Desktop, containers Linux/amd64 e `qwen3:0.6b`. Ainda há configuração manual de credenciais e associação dos workflows. Consulte os [resultados e limites](docs/validacao.md); outras plataformas e modelos não têm homologação equivalente.
 
+Para instalar e conferir a configuração inicial, siga o [roteiro de primeira execução](docs/primeira-execucao.md). A instalação é assistida: o instalador prepara a infraestrutura e os arquivos; você cria suas credenciais e publica os workflows na própria instância.
+
 ## O que está incluído
 
 - Dois workflows importáveis, sem credenciais locais ou dados de execução.
@@ -71,6 +73,8 @@ O instalador não instala programas, sobrescreve `.env` ou baixa modelos sem aut
 5. Configure as [credenciais](docs/credenciais.md), selecione o monitor publicado em `Chamar Monitoramento`, habilite esse nó e então publique o principal.
 6. No nó `Configuração da Demonstração`, confira modelo/endpoints e escolha se deseja capturar conteúdo sintético.
 7. Execute o [teste demonstrativo](docs/testes.md) e confira as observações na UI Langfuse.
+
+Se recusou o download do modelo, instale-o antes do primeiro teste. No modo A, execute conscientemente `docker compose --env-file .env --profile full exec ollama ollama pull qwen3:0.6b`. Containers saudáveis não comprovam que o modelo esteja instalado.
 
 URLs padrão do modo A: n8n `http://localhost:15678`, Langfuse `http://localhost:13000`, proxy `http://localhost:18003`. Postgres, Redis, ClickHouse, worker e Ollama não publicam portas no host. Armazenamento de objetos usa `http://localhost:19090` em loopback para mídia Langfuse.
 

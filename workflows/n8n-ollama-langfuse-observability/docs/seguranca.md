@@ -22,6 +22,8 @@ Não há garantia de anonimização de conteúdo habilitado por opt-in. Hash de 
 
 HTTP é usado na rede local de demonstração; implantações remotas exigem TLS e proteção de rede. O instalador modo B não modifica serviços existentes para aplicar essas políticas.
 
+As evidências de instalação não homologam exposição pública. Mantenha interfaces em loopback, chat autenticado quando publicado, conteúdo omitido por padrão e segredos próprios por instalação. Não há credenciais ou dados originais a reutilizar para completar o setup. A primeira configuração está detalhada no [roteiro de primeira execução](primeira-execucao.md).
+
 O proxy usa um único worker e volume exclusivo. A retenção pode excluir dados para respeitar o teto de disco. O controle de concorrência protege recursos, mas não substitui proteção contra tráfego abusivo antes do container. Rotação de credenciais exige atualizar consumidores e reiniciar somente a nova instalação em janela própria.
 
 As regras Git não removem arquivos já rastreados ou histórico. A revisão de publicação cobre os arquivos novos e os diffs staged; não é auditoria integral do histórico e dos demais projetos. Não trate ausência de achado como prova universal de ausência de segredos.
