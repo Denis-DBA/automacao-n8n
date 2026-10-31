@@ -9,7 +9,11 @@
 | 403 no proxy | Rota fora da lista permitida. Pull/delete de modelos não passam por este proxy. |
 | 429 | Limite de concorrência atingido; aguarde ou dimensione conscientemente. |
 | 502 / Ollama indisponível | Confira `OLLAMA_URL`, DNS e redes de cada container. |
-| Modelo não encontrado | Execute `ollama list` no serviço escolhido; obtenha o modelo com consentimento. |
+| Modelo não encontrado / lista vazia | Execute `ollama list`; uma instalação limpa pode responder `data: null`. Obtenha o modelo com consentimento. |
+| Langfuse saudável no host, unhealthy no Compose | Confira `HOSTNAME=0.0.0.0` no serviço novo, para o health check alcançar localhost. |
+| Monitor recebe 404 após o chat | Preserve chamada síncrona e consulta imediata; execuções completas não são salvas por padrão. |
+| 401 intermitente em rede compartilhada | Confira se outro projeto anuncia o mesmo alias `token-proxy`; use redes/endereços exclusivos. |
+| Leitura de traces não encontra dados recém-enviados | Use os limites temporais do relógio do servidor; a VM Docker pode divergir do Windows. |
 | Falta de memória | Reduza modelo/contexto e confira RAM Docker. Não remova volumes para tentar resolver. |
 | Tokens indisponíveis | Verifique uso final da API, correlação dinâmica, resposta incompleta, limites e retenção. Não estime como consumo real. |
 | Trace ausente | Confira Basic Auth do mesmo projeto, URL, header de ingestão v4, saúde do worker e permissões. |

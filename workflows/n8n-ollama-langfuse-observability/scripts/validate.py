@@ -10,6 +10,8 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     count=0
     for path in ROOT.rglob('*.py'):
+        if any(part in {'validation-private','.venv','generated','__pycache__'} for part in path.relative_to(ROOT).parts):
+            continue
         ast.parse(path.read_text(encoding='utf-8-sig'),filename=str(path));count+=1
     for path in (ROOT/'workflows').glob('*.json'):
         data=json.loads(path.read_text(encoding='utf-8'))

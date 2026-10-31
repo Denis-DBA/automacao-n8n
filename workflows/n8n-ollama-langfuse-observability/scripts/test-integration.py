@@ -27,7 +27,7 @@ def main():
     base=args.proxy_url.rstrip('/')
     assert call(base+'/health')['status']=='ok'
     models=call(base+'/v1/models',headers=headers)
-    assert args.model in [m['id'] for m in models['data']], 'Modelo não disponível'
+    assert args.model in [m['id'] for m in (models.get('data') or [])], 'Modelo não disponível; baixe-o conscientemente antes de testar'
     correlation=f'{time.time_ns()}-0'
     start=time.time_ns()
     response=call(base+'/v1/chat/completions',{'model':args.model,'stream':False,'correlation_id':correlation,

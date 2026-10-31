@@ -5,7 +5,10 @@
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "parameters": {
-        "options": {}
+        "options": {
+          "responseMode": "responseNode",
+          "autoSaveHighlightedData": false
+        }
       },
       "typeVersion": 1.5,
       "id": "ec6f7333-502a-43a7-9ed3-e09b1a76a09a",
@@ -18,7 +21,7 @@
       "name": "Configuração da Demonstração",
       "type": "n8n-nodes-base.code",
       "parameters": {
-        "jsCode": "const chat = $input.first().json;\nreturn [{json: {...chat, config: {\n  model: 'qwen3.5:9b', evaluation_model: 'qwen3.5:9b',\n  proxy_url: 'http://token-proxy:8003', langfuse_url: 'http://langfuse-web:3000',\n  evaluate: true, capture_content: false\n}}}];"
+        "jsCode": "const chat = $input.first().json;\nreturn [{json: {...chat, config: {\n  model: 'qwen3:0.6b', evaluation_model: 'qwen3:0.6b',\n  proxy_url: 'http://token-proxy:8003', langfuse_url: 'http://langfuse-web:3000',\n  evaluate: true, capture_content: false\n}}}];"
       },
       "typeVersion": 2,
       "id": "7dfad0f8-2490-48eb-bdd8-d686fa0bc474",
@@ -270,7 +273,8 @@
           "timeout": 120000,
           "maxRetries": 0,
           "topP": 0.9,
-          "extraBody": "={\"correlation_id\":\"{{ $execution.id }}-99999999\"}"
+          "extraBody": "={\"correlation_id\":\"{{ $execution.id }}-99999999\",\"reasoning_effort\":\"none\"}",
+          "responseFormat": "json_object"
         }
       },
       "typeVersion": 1.3,
@@ -339,7 +343,7 @@
           "value": ""
         },
         "options": {
-          "waitForSubWorkflow": false
+          "waitForSubWorkflow": true
         }
       },
       "typeVersion": 1.4,
@@ -349,7 +353,7 @@
         0
       ],
       "disabled": true,
-      "notes": "Importe o subworkflow, selecione-o neste nó e habilite este nó. Nenhum ID local é distribuído.",
+      "notes": "Importe e publique o subworkflow antes de selecioná-lo. A chamada aguarda somente consulta de metadados e telemetria, preservando a política de não salvar conversas.",
       "onError": "continueRegularOutput"
     },
     {
@@ -431,7 +435,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "parameters": {
-        "jsCode": "const base = $('Langfuse - Preparar Trace').first().json;\nconst original = {...base,correlation_id:String($execution.id)+'-99999999',end_ms:Date.now()};\nconst usage = $input.first().json;\nconst otlp = JSON.parse(JSON.stringify(original.otlp));\nconst spans = otlp.resourceSpans[0].scopeSpans[0].spans;\nconst attr=(key,value)=>({key,value:{stringValue:String(value)}});\nlet status = 'unavailable';\nif (usage.status === 'real' && usage.correlation_id === original.correlation_id && Array.isArray(usage.records) && usage.records.length) {\n  const ids = new Set(); let input=0,output=0;\n  for (const r of usage.records) {\n    if (!r.request_id || ids.has(r.request_id) || r.status !== 'real' ||\n      !Number.isSafeInteger(r.input_tokens) || !Number.isSafeInteger(r.output_tokens) ||\n      r.input_tokens<0 || r.output_tokens<0 || r.total_tokens!==r.input_tokens+r.output_tokens)\n      throw new Error('Contadores reais inválidos');\n    ids.add(r.request_id); input+=r.input_tokens;output+=r.output_tokens;\n    // One observation per actual request: avoids double counting parent totals.\n    spans.push({traceId:original.trace_id,spanId:require('crypto').randomBytes(8).toString('hex'),parentSpanId:original.span_id,\n      name:'Ollama — geração',kind:1,startTimeUnixNano:String(BigInt(original.start_ms)*1000000n),\n      endTimeUnixNano:String(BigInt(original.end_ms)*1000000n),attributes:[\n        attr('langfuse.observation.type','generation'),attr('langfuse.session.id',original.session_id),\n        attr('langfuse.trace.name','n8n-ollama-observability'),attr('langfuse.observation.model.name',r.model),\n        attr('langfuse.observation.usage_details',JSON.stringify({input:r.input_tokens,output:r.output_tokens,total:r.total_tokens})),\n        attr('langfuse.observation.metadata.usage_source','real'),attr('langfuse.observation.metadata.request_id',r.request_id),\n        {key:'gen_ai.usage.input_tokens',value:{intValue:String(r.input_tokens)}},\n        {key:'gen_ai.usage.output_tokens',value:{intValue:String(r.output_tokens)}}]});\n  }\n  if(input!==usage.input_tokens || output!==usage.output_tokens || input+output!==usage.total_tokens || ids.size!==usage.requests)\n    throw new Error('Agregação inconsistente');\n  status='real';\n}\nspans[0].attributes.push(attr('langfuse.observation.metadata.token_status',status));\notlp.resourceSpans[0].scopeSpans[0].spans=spans.slice(1);\nreturn [{json:{...original,otlp,token_status:status}}];"
+        "jsCode": "const base = $('Langfuse - Preparar Trace').first().json;\nconst original = {...base,correlation_id:String($execution.id)+'-99999999',end_ms:Date.now()};\nconst usage = $input.first().json;\nconst otlp = JSON.parse(JSON.stringify(original.otlp));\nconst spans = otlp.resourceSpans[0].scopeSpans[0].spans;\nconst attr=(key,value)=>({key,value:{stringValue:String(value)}});\nlet status = 'unavailable';\nif (usage.status === 'real' && usage.correlation_id === original.correlation_id && Array.isArray(usage.records) && usage.records.length) {\n  const ids = new Set(); let input=0,output=0;\n  for (const r of usage.records) {\n    if (!r.request_id || ids.has(r.request_id) || r.status !== 'real' ||\n      !Number.isSafeInteger(r.input_tokens) || !Number.isSafeInteger(r.output_tokens) ||\n      r.input_tokens<0 || r.output_tokens<0 || r.total_tokens!==r.input_tokens+r.output_tokens)\n      throw new Error('Contadores reais inválidos');\n    ids.add(r.request_id); input+=r.input_tokens;output+=r.output_tokens;\n    // One observation per actual request: avoids double counting parent totals.\n    spans.push({traceId:original.trace_id,spanId:require('crypto').randomBytes(8).toString('hex'),parentSpanId:original.span_id,\n      name:'Ollama — avaliação',kind:1,startTimeUnixNano:String(BigInt(original.start_ms)*1000000n),\n      endTimeUnixNano:String(BigInt(original.end_ms)*1000000n),attributes:[\n        attr('langfuse.observation.type','generation'),attr('langfuse.session.id',original.session_id),\n        attr('langfuse.trace.name','n8n-ollama-observability'),attr('langfuse.observation.model.name',r.model),\n        attr('langfuse.observation.usage_details',JSON.stringify({input:r.input_tokens,output:r.output_tokens,total:r.total_tokens})),\n        attr('langfuse.observation.metadata.usage_source','real'),attr('langfuse.observation.metadata.request_id',r.request_id),\n        {key:'gen_ai.usage.input_tokens',value:{intValue:String(r.input_tokens)}},\n        {key:'gen_ai.usage.output_tokens',value:{intValue:String(r.output_tokens)}}]});\n  }\n  if(input!==usage.input_tokens || output!==usage.output_tokens || input+output!==usage.total_tokens || ids.size!==usage.requests)\n    throw new Error('Agregação inconsistente');\n  status='real';\n}\nspans[0].attributes.push(attr('langfuse.observation.metadata.token_status',status));\notlp.resourceSpans[0].scopeSpans[0].spans=spans.slice(1);\nreturn [{json:{...original,otlp,token_status:status}}];"
       },
       "position": [
         2400,
@@ -469,6 +473,21 @@
         600
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "id": "73541653-4a01-4123-b01e-8a4fe8260bb2",
+      "name": "Enviar Resposta do Chat",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4560,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {output:$(\"Agente IA de Demonstração\").first().json.output} }}",
+        "options": {}
+      }
     }
   ],
   "connections": {
@@ -615,7 +634,7 @@
         ],
         [
           {
-            "node": "Preparar Monitoramento",
+            "node": "Responder ao Chat",
             "type": "main",
             "index": 0
           }
@@ -648,7 +667,7 @@
       "main": [
         [
           {
-            "node": "Preparar Monitoramento",
+            "node": "Responder ao Chat",
             "type": "main",
             "index": 0
           }
@@ -666,17 +685,6 @@
         ]
       ]
     },
-    "Chamar Monitoramento": {
-      "main": [
-        [
-          {
-            "node": "Responder ao Chat",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Score válido?": {
       "main": [
         [
@@ -688,7 +696,7 @@
         ],
         [
           {
-            "node": "Preparar Monitoramento",
+            "node": "Responder ao Chat",
             "type": "main",
             "index": 0
           }
@@ -722,6 +730,28 @@
         [
           {
             "node": "Score válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder ao Chat": {
+      "main": [
+        [
+          {
+            "node": "Enviar Resposta do Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Resposta do Chat": {
+      "main": [
+        [
+          {
+            "node": "Preparar Monitoramento",
             "type": "main",
             "index": 0
           }

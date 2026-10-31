@@ -1,0 +1,8 @@
+{
+  "tested_model": {
+    "name": "qwen3:0.6b",
+    "digest": "sha256:7df6b6e09427a769808717c0a93cadc4ae99ed4eb8bf5ca557c90846becea435",
+    "size_bytes": 522653767
+  },
+  "note": "Reference digest of tested model. Model tags may change; verify this digest before claiming identical weights."
+}

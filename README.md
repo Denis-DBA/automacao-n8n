@@ -92,6 +92,6 @@ O `.gitignore` protege arquivos auxiliares locais, mas não remove informações
 
 ## n8n Ollama Langfuse — Observability
 
-Laboratório independente de observabilidade de IA local, com proxy de tokens reais, workflows n8n e integração OTLP com Langfuse. Inclui instaladores e dois modos de implantação. A validação completa de instalação limpa permanece pendente; consulte o relatório antes de instalar.
+Laboratório independente de observabilidade de IA local, com proxy de tokens reais, workflows n8n e integração OTLP com Langfuse. Inclui instaladores e dois modos de implantação. Instalação limpa e fluxo ponta a ponta validados em Windows/Docker Desktop com containers Linux/amd64 e Qwen 3 0.6B; consulte os resultados, etapas manuais e limites de plataforma.
 
 [Ver projeto e validação](workflows/n8n-ollama-langfuse-observability/)

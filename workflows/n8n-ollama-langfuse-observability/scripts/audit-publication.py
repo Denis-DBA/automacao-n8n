@@ -1,5 +1,6 @@
 """Scan explicit Git-index candidates only. Never scan private env/runtime files."""
 import json
+import argparse
 from pathlib import Path
 import subprocess
 
@@ -10,8 +11,12 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser=argparse.ArgumentParser(description='Audit explicit Git-index candidates, never private environments')
+    parser.add_argument('--all-project',action='store_true',help='Examine all indexed project files plus repository README/.gitignore')
+    args=parser.parse_args()
     repo=Path(subprocess.check_output(['git','rev-parse','--show-toplevel'],cwd=ROOT,text=True).strip())
-    files=subprocess.check_output(['git','diff','--cached','--name-only','--diff-filter=ACMR','-z'],cwd=repo).decode().split('\0')
+    command=['git','ls-files','--cached','-z','--',ROOT.relative_to(repo).as_posix(),'.gitignore','README.md'] if args.all_project else ['git','diff','--cached','--name-only','--diff-filter=ACMR','-z']
+    files=subprocess.check_output(command,cwd=repo).decode().split('\0')
     candidates=[repo/name for name in files if name]
     if not candidates:raise SystemExit('Nenhum arquivo staged para auditar')
     # Refuse stale index contents: the scanner must examine the publication version.

@@ -28,20 +28,6 @@
       ]
     },
     {
-      "name": "Aguardar Conclusão",
-      "type": "n8n-nodes-base.wait",
-      "parameters": {
-        "amount": 5,
-        "unit": "seconds"
-      },
-      "typeVersion": 1.1,
-      "id": "7088219f-c3c2-4cb8-bbd7-fd360110a72f",
-      "position": [
-        480,
-        0
-      ]
-    },
-    {
       "name": "Consultar Execução n8n",
       "type": "n8n-nodes-base.httpRequest",
       "parameters": {
@@ -176,17 +162,6 @@
       ]
     },
     "Configurar Monitoramento": {
-      "main": [
-        [
-          {
-            "node": "Aguardar Conclusão",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Aguardar Conclusão": {
       "main": [
         [
           {

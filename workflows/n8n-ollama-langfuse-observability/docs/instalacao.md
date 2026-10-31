@@ -6,7 +6,7 @@ Instale Python 3.12+, Git e Docker com Compose separadamente. Execute `docker in
 
 O perfil `full` cria n8n, Ollama, proxy, Langfuse web/worker, Postgres, Redis, ClickHouse e MinIO. Os volumes são prefixados pelo nome Compose. Nenhum usa `external: true`, caminho de dados original ou `container_name` fixo. O usuário n8n é criado na UI. O usuário, projeto e chaves Langfuse são inicializados por `LANGFUSE_INIT_*` em uma instalação nova.
 
-Confira recursos em Docker Desktop antes de iniciar: Langfuse + ClickHouse + n8n + modelo local exigem memória e disco consideráveis. O limite Ollama é 12 GiB no exemplo, não uma promessa de que um modelo caberá. Consulte a página do modelo e ajuste limite/contexto conforme hardware. A imagem Ollama de referência é 0.40.13. Qwen 3.5 9B é somente o exemplo de origem; não é baixado automaticamente. Outros modelos precisam de teste individual de API, memória e seguimento de instruções.
+Confira recursos em Docker Desktop antes de iniciar: Langfuse + ClickHouse + n8n + modelo local exigem memória e disco consideráveis. O limite Ollama é 12 GiB no exemplo, não uma promessa de que um modelo caberá. Consulte a página do modelo e ajuste limite/contexto conforme hardware. A imagem Ollama de referência é 0.40.13. O padrão testado é Qwen 3 0.6B, com download de aproximadamente 522 MB. Qwen 3.5 9B permanece como exemplo da instalação de origem; não foi homologado neste stack isolado nem é baixado automaticamente. Outros modelos precisam de teste individual de API, memória e seguimento de instruções.
 
 Comandos manuais após configurar `.env`:
 
@@ -18,6 +18,8 @@ docker compose --env-file .env --profile full exec ollama ollama list
 ```
 
 Os mesmos comandos funcionam em Bash. Para baixar modelo, execute conscientemente `docker compose --env-file .env --profile full exec ollama ollama pull NOME_DO_MODELO`. Pode consumir vários GB e tempo de rede. Nenhum modelo pago/remoto é necessário.
+
+As imagens de infraestrutura e a base Python são fixadas por digest. Confira também o digest do modelo em `models.lock.json`: tags de modelos podem receber pesos novos. Atualize os arquivos de lock somente após repetir os testes.
 
 ## Modo B
 
@@ -35,7 +37,9 @@ Se os serviços existentes publicam somente em `127.0.0.1`, o acesso pelo gatewa
 
 ## Importação
 
-Use arquivos de `generated/` após setup. Se não usou setup, os modelos públicos em `workflows/` precisam de configuração manual. Importe o monitor antes do principal. Abra `Chamar Monitoramento`, selecione o workflow importado, mantenha `waitForSubWorkflow=false` e habilite o nó. Ele vem desabilitado e sem ID para evitar referência ao ambiente original.
+Use arquivos de `generated/` após setup. Se não usou setup, os modelos públicos em `workflows/` precisam de configuração manual. Importe, configure e publique o monitor antes do principal. Abra `Chamar Monitoramento`, selecione o workflow publicado, mantenha `waitForSubWorkflow=true` e habilite o nó. O monitor consulta metadados enquanto o principal ainda está ativo; a resposta explícita ao chat já foi enviada antes dessa chamada. Ele vem desabilitado e sem ID para evitar referência ao ambiente original.
+
+Em uma rede compartilhada, não deixe duas instalações anunciarem o mesmo alias `token-proxy`: o DNS pode resolver para o proxy de outra instalação, que usa outra chave. Prefira redes separadas e endereços exclusivos. O instalador B não conecta serviços automaticamente a redes existentes.
 
 No modo existente, Code nodes precisam de `crypto` autorizado (`NODE_FUNCTION_ALLOW_BUILTIN=crypto` no ambiente de execução dos Code nodes/task runners). Se isso exigir mudança no serviço existente, faça em janela e procedimento próprios; o instalador não realiza essa mudança.
 

@@ -2,7 +2,7 @@
 
 Laboratório de observabilidade de IA local: conversa no n8n, inferência Ollama, contadores reais capturados por FastAPI e observações enviadas por OpenTelemetry ao Langfuse. Independente de CRM, WhatsApp e bancos de projetos anteriores.
 
-**Estado:** implementação para revisão. Consulte [validação](docs/validacao.md) antes de instalar. Uma importação válida e testes com upstream simulado não comprovam uma instalação completa Plug & Play.
+**Estado:** instalação completa e fluxo ponta a ponta validados em Windows com Docker Desktop, containers Linux/amd64 e `qwen3:0.6b`. Ainda há configuração manual de credenciais e associação dos workflows. Consulte os [resultados e limites](docs/validacao.md); outras plataformas e modelos não têm homologação equivalente.
 
 ## O que está incluído
 
@@ -30,7 +30,8 @@ flowchart LR
   T --> E[Avaliador Ollama opcional]
   E --> S[Score e uso do avaliador]
   S --> L
-  S --> N[Subworkflow: API n8n e latência]
+  S --> R[Resposta explícita ao chat]
+  R --> N[Subworkflow: API n8n e latência]
   N --> L
   N -. opcional .-> Slack
 ```
@@ -39,7 +40,7 @@ O `correlation_id` combina execution ID e índice do item. Cada chamada recebe t
 
 ## Instalação rápida
 
-Pré-requisitos: Git, Python 3.12+, Docker Engine/Desktop e Compose com `--wait`. O n8n de referência é **2.41.7**; versões anteriores não foram homologadas. O modo completo usa Langfuse 4 e seus serviços internos. Os nomes de imagem e versões estão no Compose; consulte as ressalvas de reprodutibilidade na validação.
+Pré-requisitos: Git, Python 3.12+, Docker Engine/Desktop e Compose com `--wait`. O n8n de referência é **2.41.7**; versões anteriores não foram homologadas. O modo completo usa Langfuse 4 e seus serviços internos. Imagens de infraestrutura e base Python estão fixadas por digest no Compose/Dockerfile e registradas em `images.lock.json`. O modelo padrão é `qwen3:0.6b` (aproximadamente 522 MB para download).
 
 PowerShell:
 
@@ -66,8 +67,8 @@ O instalador não instala programas, sobrescreve `.env` ou baixa modelos sem aut
 1. Selecione A (infraestrutura nova) ou B (somente proxy para serviços existentes).
 2. Revise portas, endereços e o nome Docker exclusivo. O padrão publica apenas em loopback.
 3. Autorize a criação dos serviços novos. No modo A, o download do modelo tem confirmação separada.
-4. Importe primeiro `generated/monitoramento-langfuse-ollama.json`, depois o principal.
-5. Configure as [credenciais](docs/credenciais.md), selecione o subworkflow no nó `Chamar Monitoramento` e habilite esse nó.
+4. Importe, configure e **publique o monitor** `generated/monitoramento-langfuse-ollama.json` antes de importar o principal.
+5. Configure as [credenciais](docs/credenciais.md), selecione o monitor publicado em `Chamar Monitoramento`, habilite esse nó e então publique o principal.
 6. No nó `Configuração da Demonstração`, confira modelo/endpoints e escolha se deseja capturar conteúdo sintético.
 7. Execute o [teste demonstrativo](docs/testes.md) e confira as observações na UI Langfuse.
 
@@ -81,7 +82,7 @@ Modo B cria somente `token-proxy` e seu volume, sob um nome Docker exclusivo. N�
 
 Traces têm observação pai `agent` e filhas `generation`. Só as filhas recebem tokens, evitando dupla contagem. `langfuse.observation.usage_details` e o nome do modelo permitem tratar uso como métrica, não apenas metadata. O dashboard deve ser conferido após a ingestão real. Não há cópia de dashboards ou preços da instalação original.
 
-O monitor consulta a API n8n com `includeData=false`. Após cinco segundos, se a execução já terminou, mede duração do workflow; caso contrário, informa latência do agente com escopo explícito. Não volta a estimar tokens pela API n8n. Scores avaliam qualidade subjetiva e podem sofrer influência do texto avaliado.
+O chat envia uma resposta explícita com somente o texto da IA antes de chamar o monitor. A chamada do subworkflow aguarda a consulta de metadados (`includeData=false`) enquanto a execução principal está ativa. Isso evita depender de conversas salvas: execuções bem-sucedidas são descartadas. O snapshot informa o estado observado e a latência do agente, sem apresentá-los como estado terminal ou duração total do workflow. Scores avaliam qualidade subjetiva e podem sofrer influência do texto avaliado.
 
 Simple Memory serve apenas à demonstração: não oferece persistência durável, distribuição ou isolamento de sessões não autenticadas em produção. A capacidade do modelo de seguir prompts varia; nenhum desempenho ou consumo igual entre modelos é garantido.
 

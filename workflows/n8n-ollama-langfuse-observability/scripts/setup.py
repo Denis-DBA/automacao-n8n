@@ -136,7 +136,8 @@ def main():
     request_json(url + "/health")
     try:
         models = request_json(url + "/v1/models", values["PROXY_API_KEY"])
-        names = [m["id"] for m in models.get("data", [])]
+        # An empty Ollama installation can return {"data": null}.
+        names = [m["id"] for m in (models.get("data") or [])]
         print("Modelo configurado disponível:", values["OLLAMA_MODEL"] in names)
     except (OSError, ValueError):
         print("Ollama não alcançável pelo proxy. Confira OLLAMA_URL e a rede.")
@@ -147,8 +148,8 @@ def main():
         print("Langfuse: http://localhost:" + values["LANGFUSE_PORT"])
         print("Verifique Langfuse /api/public/health no navegador; worker pode levar alguns minutos para ficar pronto.")
     print("Proxy: " + url)
-    print("Importe primeiro generated/monitoramento-langfuse-ollama.json; depois o principal.")
-    print("Configure credenciais e habilite Chamar Monitoramento após selecionar o subworkflow.")
+    print("Importe, configure e publique primeiro generated/monitoramento-langfuse-ollama.json; depois importe o principal.")
+    print("Configure credenciais, selecione o subworkflow publicado e habilite Chamar Monitoramento; então publique o principal.")
     print("Leia docs/credenciais.md e docs/testes.md. A captura de conteúdo exige opt-in explícito no nó de configuração.")
 
 

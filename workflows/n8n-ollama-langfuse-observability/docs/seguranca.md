@@ -26,4 +26,4 @@ O proxy usa um único worker e volume exclusivo. A retenção pode excluir dados
 
 As regras Git não removem arquivos já rastreados ou histórico. A revisão de publicação cobre os arquivos novos e os diffs staged; não é auditoria integral do histórico e dos demais projetos. Não trate ausência de achado como prova universal de ausência de segredos.
 
-Versões Python são fixadas. Imagens sem digest no Compose continuam sujeitas à mutabilidade de tags. Revise atualizações e repita testes/auditoria. Resultados das ferramentas e verificações staged constam em [validação](validacao.md).
+Versões Python e digests das imagens de infraestrutura/base foram fixados. Atualizações exigem revisão explícita e repetição dos testes. Isso não substitui auditoria de vulnerabilidades de imagens ou dependências npm. O Chat Trigger também desabilita o salvamento automático de campos destacados. Resultados das ferramentas e verificações do índice Git constam em [validação](validacao.md).

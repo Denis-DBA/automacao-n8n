@@ -8,7 +8,7 @@ Persistência utiliza arquivos JSONL diários, contadores e metadados mínimos, 
 
 O agente pai envia input/output controlados por opt-in; gerações filhas recebem uso real. Cada geração é associada ao modelo reportado no Ollama. Os spans de geração usam a janela temporal do agente: ainda não há timestamp individual de cada chamada no workflow. Latência por requisição não deve ser inferida desses spans. O avaliador usa janela do início do agente até sua conclusão, e correlação separada.
 
-O subworkflow recebe trace ID, span ID, sessão derivada e execution ID do principal. Consulta somente estado/duração na API n8n. Não acessa PostgreSQL adicional e não estima tokens. O alerta opcional passa somente identificador técnico, sem conteúdo de conversa.
+O principal usa resposta explícita, antes da chamada síncrona do monitor, para impedir que uma resposta HTTP interna de telemetria seja devolvida ao chat. O subworkflow recebe trace ID, span ID, sessão derivada e execution ID. Consulta imediatamente somente metadados na API n8n enquanto o principal está ativo; não aguarda cinco segundos nem depende de execuções salvas. O estado `running` é um snapshot legítimo, não uma afirmação de conclusão. A latência com escopo `agent` mede o agente, não a duração final do workflow. Não acessa PostgreSQL adicional e não estima tokens. O alerta opcional passa somente identificador técnico, sem conteúdo de conversa.
 
 O hash de sessão evita publicar diretamente o sessionId, mas é determinístico e não equivale a anonimização irreversível. Use IDs de sessão sintéticos/aleatórios. ID de trace/span usa `crypto.randomBytes`, sem reutilização de IDs locais.
 
